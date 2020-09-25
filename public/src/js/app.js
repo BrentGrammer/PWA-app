@@ -52,11 +52,21 @@ function askForNotificationPermission() {
 }
 
 function displayConfirmNotification() {
-  // you can pass options to the notification:
-  var options = {
-    body: "You subscribed to notifications. Yay!",
-  };
-  new Notification("Successfully Subscribed!", options);
+  // handle notifications with the service worker if supported
+  if ("serviceWorker" in navigator) {
+    var options = {
+      body: "You subscribed to notifications. Yay!",
+    };
+    navigator.serviceWorker.ready.then((swregistration) => {
+      // the sw registration is not only the service worker, but extra functionality you can use to handle notifications
+      // we can access the service worker interface to notifications
+      // this takes the same args as the new Notification constructor - a title and options
+      swregistration.showNotification(
+        "Successfully Subscribed (from SW!)",
+        options
+      );
+    });
+  }
 }
 
 // only show the enable notifications buttons if it is supported in the browser

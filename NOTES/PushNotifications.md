@@ -21,7 +21,8 @@
 - The backend server sends a push notification to the Broser Vendor Push server using an endpoint assoc with the subscription
 - **Browser Vendor Push server then delivers the notification to the app via the service worker in a triggered `push` event**
 
-NOTE: You can display a notification whenever you want in your app and technically do not need to wait for a `push` event simply using the `Notification API` via your JavaScript code if you want. Service Workers are necessary when dealing with Push Notifications, however.
+**NOTE: You can display a notification whenever you want anywhere in your app and technically do not need to wait for a `push` event.**
+(You can simply using the `Notification API` via your JavaScript code if you want. Service Workers are necessary when dealing with Push Notifications, however.)
 
 ## Setting up Push Notifications
 
@@ -54,3 +55,24 @@ NOTE: You can display a notification whenever you want in your app and technical
     });
   }
   ```
+
+### Showing Notifications via the Service Worker
+
+- You can access the _Service Worker Registration_ which allows you to manage Notifications via the Service Worker any where in your code by checking the `.ready` property:
+
+```javascript
+if ("serviceWorker" in navigator) {
+  var options = {
+    body: "You subscribed to notifications. Yay!",
+  };
+  navigator.serviceWorker.ready.then((swregistration) => {
+    // the sw registration is not only the service worker, but extra functionality you can use to handle notifications
+    // we can access the service worker interface to notifications
+    // this takes the same args as the new Notification constructor - a title and options
+    swregistration.showNotification(
+      "Successfully Subscribed (from SW!)",
+      options
+    );
+  });
+}
+```
