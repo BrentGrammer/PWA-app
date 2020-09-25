@@ -93,8 +93,10 @@ if ("serviceWorker" in navigator) {
   - Note: some operating systems do not allow more than one notification at a time, but if they allow multiple notifications at a time this can be useful to only display one of those with the same tag.
 - `renotify`: accepts bool true/false. new notification with same tag still vibrates and notifies user
 - `actions`: takes an array where you can specify multiple actions. Each action is an object.
+
   - **You should not rely on these being displayed for the user to tap on. It depends on the device and system. It's safer to simply rely on a user tapping on the notification without having the option for different actions.**
   - Ex:
+
     ```javascript
     actions: [
         {
@@ -109,3 +111,36 @@ if ("serviceWorker" in navigator) {
         },
       ],
     ```
+
+    - **Reacting to action clicks** happens in the service worker code because the Notification is not part of the web application - it is a system notification that the user can interact with when our app isn't even open. The sw is a background process that will still be running and listening for these interactions.
+    - Listen for a `notificationclick` event in the service worker:
+
+    ```javascript
+    self.addEventListener("notificationclick", function (event) {
+      // find out which notification it was for
+      var notification = event.notification;
+      // find which action was clicked
+      var action = event.action; // this matches up to the id set up in the `action` prop in app.js
+
+      if (action === "confirm") {
+        console.log("confirm was chosen");
+        // close the notification - it does not close automatically on some OSs (android)
+        notification.close();
+      } else {
+        console.log(action);
+        notification.close();
+      }
+    });
+    ```
+
+### Listening for the Close Notification event
+
+- Happens when user swipes the notification away or clicks the `X`
+- Logic done in Service worker on the event `notificationclose`
+- Good place to poss. send analytics data to your server (maybe store timestamp of notification and analyze why users may not have interacted with it)
+
+```javascript
+self.addEventListener("notificationclose", function (event) {
+  console.log("notification closed.");
+});
+```

@@ -266,3 +266,24 @@ function syncData(dt) {
       console.error(e);
     });
 }
+
+// Handle notification action clicks by the user
+self.addEventListener("notificationclick", function (event) {
+  // find out which notification it was for
+  var notification = event.notification;
+  // find which action was clicked
+  var action = event.action; // this matches up to the id set up in the `action` prop in app.js
+
+  if (action === "confirm") {
+    console.log("confirm was chosen");
+    // close the notification - it does not close automatically on some OSs (android)
+    notification.close();
+  } else {
+    console.log(action);
+    notification.close();
+  }
+});
+
+self.addEventListener("notificationclose", function (event) {
+  console.log("notification closed.");
+});

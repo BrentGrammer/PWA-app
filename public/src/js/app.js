@@ -65,6 +65,7 @@ function displayConfirmNotification() {
       tag: "confirm-notification", // other notifications with same tag will be overwritten with subsequent notifications with the same tag so multiple notifications with the same tag will only show the latest
       renotify: true, // new notification with same tag still vibrates and notifies user
       actions: [
+        // these actions are handled in the service worker on a 'notificationclick' event
         {
           action: "confirm",
           title: "Okay",
