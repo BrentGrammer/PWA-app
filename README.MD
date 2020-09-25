@@ -24,6 +24,19 @@ Finally, run `npm start` to start the development server and visit [localhost:80
   - **EASIEST:** Go to `Application` -> `Clear Storage` -> `Clear site data` and refresh the page to load the new service worker
   - Update the version number in your service worker and refresh the browser, click on `skip waiting` and refresh and `activate` if given the option in Dev tools under `Application` -> `Service Workers`
 
+### Hook up your device to chrome dev tools:
+
+- (https://developers.google.com/web/tools/chrome-devtools/remote-debugging/)
+
+  - Make sure USB Debugging is enabled on phone (in Android go to Developer Options)
+  - To access, go to chrome://inspect/#devices
+  - **Enable port forwarding** - click configure and check Enable Port Forwarding
+  - Accept the Permissions Prompt on your phone
+  - You can now go to http://localhost:<app-port> on your device to view app
+  - You can click `inspect` button in Chrome developer tools after going to `More tools -> Remote devices`
+  - On device, clear Site Settings by going to ellipses menu on top right corner and clicking the `i` information icon => `Site settings`, and then `Clear & reset` to clear the state for testing in development
+  - Refresh the page on the device for a fresh start
+
 ### Note on Google Cloud Functions:
 
 - Will be billed small charge for deploying using Node v10+

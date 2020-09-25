@@ -1,10 +1,17 @@
 ## In Development:
 
-- Hook up your device to chrome dev tools: (https://developers.google.com/web/tools/chrome-devtools/remote-debugging/)
+### Hook up your device to chrome dev tools:
 
+- (https://developers.google.com/web/tools/chrome-devtools/remote-debugging/)
+
+  - Make sure USB Debugging is enabled on phone (in Android go to Developer Options)
   - To access, go to chrome://inspect/#devices
   - **Enable port forwarding** - click configure and check Enable Port Forwarding
+  - Accept the Permissions Prompt on your phone
   - You can now go to http://localhost:<app-port> on your device to view app
+  - You can click `inspect` button in Chrome developer tools after going to `More tools -> Remote devices`
+  - On device, clear Site Settings by going to ellipses menu on top right corner and clicking the `i` information icon => `Site settings`, and then `Clear & reset` to clear the state for testing in development
+  - Finally refresh the page on the device for a fresh start
 
 - Chrome Tools: Under Network tab, set disable cache to true so you can test that the service worker is working and you're not using the browser cache.
 - Make sure to disable browser caching/caching in your npm scripts or start script. Ex: `"start": "http-server -c-1"`

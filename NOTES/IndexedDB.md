@@ -24,11 +24,14 @@
   - You can technically store unstructured data in IndexedDB (files/blobs), but it is really better for structured data
 
 - Supported by many browsers
+
   - normal browser feature accessed directly in JavaScript
   - The vanilla api is a little clunky - **Use this package:** [idb](https://github.com/jakearchibald/idb)
     - idb wraps the api and allows you to use promises which is more idiomatic to service worker code vs. callbacks
     - can import it into your service worker code with `importScripts([path])`
     - also cache it in your static assets cached in the service worker
+
+- Has a higher memory threshold than LocalStorage. Hundreds of Megabytes potentially
 
 ### Using IDB Package:
 

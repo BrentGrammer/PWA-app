@@ -76,3 +76,21 @@ if ("serviceWorker" in navigator) {
   });
 }
 ```
+
+### Notifications Options
+
+- `body`: specify a string to display under the title of the notification
+- `icon`: points to a url for an icon to display next to the notification. 96x96 is a nice size for an image icon to show.
+- `image`: point to a url for the image. This will show up in the body of the notification as opposed to the left or right like the `icon` would. i.e. it would be a big image in the middle of the notification.
+- `dir`: 'ltr' or 'rtl'. direction of the text 'ltr' is the default.
+- `lang`: accepts a BCP 47 language code - google these codes. ex: 'en-US'
+- `vibrate`: takes an array of millisecond numbers for the vibration pattern. Not supported on all devices/browsers. Pattern is <vibrateInMs>/<pauseInMs>/<vibrateInMs>. Ex: [100,50,200]
+- `badge`: takes a url to a icon to show in the top bar:
+
+  ```javascript
+  badge: "/src/images/icons/app-icon-96x96.png", // shows in the top bar - may only apply to Android.  Android automatically masks this icon for you and 96x96 is the recommended size
+  ```
+
+- `tag`: accepts a string to tag the notification. Acts like an Id for the notification. If you send other notifications with the same tag, they will stack on top of each other instead of displaying beneath each other. i.e. the latest notification with the same tag will replace the previous one.
+  - Note: some operating systems do not allow more than one notification at a time, but if they allow multiple notifications at a time this can be useful to only display one of those with the same tag.
+- `renotify`: accepts bool true/false. new notification with same tag still vibrates and notifies user
