@@ -51,6 +51,42 @@ Finally, run `npm start` to start the development server and visit [localhost:80
 "engines": {"node": "8"}
 ```
 
-### Troubleshooting
+## Generating VAPID keys for Push Notification Security:
+
+After installing the `web-push` npm package to your backend dependencies (i.e. in the `functions` folder package.json), setup a new script in your `package.json` to start the package script.
+
+```json
+  "scripts": {
+    //...
+    "web-push": "web-push"
+  },
+```
+
+Now generate the keys with `npm run web-push generate-vapid-keys`
+
+- **You only run this once during development.**
+
+- Use the public key generated in the terminal in your client app where you create the subscription for push notifications
+
+  - **NOTE** The configuration passed into subscribe() is expecting a `Uint8Array`, so you need a utility to convert the vapid key string into that type:
+
+  ```javascript
+  function urlBase64ToUint8Array(base64String) {
+    var padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+    var base64 = (base64String + padding)
+      .replace(/\-/g, "+")
+      .replace(/_/g, "/");
+
+    var rawData = window.atob(base64);
+    var outputArray = new Uint8Array(rawData.length);
+
+    for (var i = 0; i < rawData.length; ++i) {
+      outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
+  }
+  ```
+
+## Troubleshooting
 
 - `firebase init` to setup cloud functions, you may need to logout and login with `firebase logout` and `firebase login` before running `firebase init` if you get an error when trying to add to an existing project

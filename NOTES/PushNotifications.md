@@ -144,3 +144,118 @@ self.addEventListener("notificationclose", function (event) {
   console.log("notification closed.");
 });
 ```
+
+## Push Notifications
+
+- Store subscriptions on a server which is used to send notifications to subscribers (Browser/Devices subscribed)
+- Subscriptions are per browser/device combination and are also associated with a specific service worker (if a new service worker is installed, this renders the previous subscription useless)
+  - This does not apply if there is only a code change and the service worker is not uninstalled - (i.e. if you clear site data)
+
+### Creating a Subscription
+
+- Done on the front end, for instance where the user clicks the button to enable notifications
+- A subscription contains an endpoint for the browser vendor server to which you push your messages to. (that server forwards them to our web app)
+  - **SECURITY RISK**: If anyone finds out what your endpoint is, they can send messages that will look like they're coming from you.
+  - You need to specify that push messages must only come from your backend server
+    - Passing an IP address for your server is not enough - someone can fake that and it is not secure
+    - Use **VAPID** keys, an approach which involves using 2 keys - a public and private key. The private key is connectected to the public one but cannot be derived from it. It is stored on your server
+  - Install the `web-push` npm package (`npm i web-push`) into your back end server dependencies (not the client app) and use it to generate these VAPID keys and manage sending push notifications
+- **Each browser/device/service worker combination yields one subscription if subscribed**. If you open up a new browser on the same device, then that is a separate service worker registration and a separate subscription. Also, _If the service worker is unregistered or removed from the browser, then that subscription no longer applies - you need to remove it from the backend in that case_
+
+### Generating VAPID keys for Push Notification Security:
+
+After installing the `web-push` npm package to your backend dependencies, setup a new script in your `package.json` to start the package script.
+
+```json
+  "scripts": {
+    //...
+    "web-push": "web-push"
+  },
+```
+
+Now generate the keys with `npm run web-push generate-vapid-keys`
+
+- **You only run this once during development.**
+
+- Use the public key generated in the terminal in your client app where you create the subscription for push notifications
+
+  - **NOTE** The configuration passed into subscribe() is expecting a `Uint8Array`, so you need a utility to convert the vapid key string into that type:
+
+  ```javascript
+  function urlBase64ToUint8Array(base64String) {
+    var padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+    var base64 = (base64String + padding)
+      .replace(/\-/g, "+")
+      .replace(/_/g, "/");
+
+    var rawData = window.atob(base64);
+    var outputArray = new Uint8Array(rawData.length);
+
+    for (var i = 0; i < rawData.length; ++i) {
+      outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
+  }
+  ```
+
+- In your Client App, pass the Converted Vapid key into a config options to `.subscribe()` on the service worker registration where you craete the subscription:
+- Store the subscription in the database, and you will use the keys that are stored there when sending push notifications
+
+```javascript
+function configurePushSub() {
+  // check if browser supports service workers:
+  if (!("serviceWorker" in navigator)) return;
+  // save in outer scope to access lower in promise chain
+  var reg;
+
+  navigator.serviceWorker.ready
+    .then(function (swregistration) {
+      reg = swregistration;
+      // access push manager and check for existing subscriptions
+      return swregistration.pushManager.getSubscription(); //returns promise
+    })
+    .then(function (sub) {
+      // subscription will be null if none exist
+      // Note a subscription is per browser/device combo - if another browser on same device is opened, that would be a separate subscription
+      // check if this browser/device combo has a subscription:
+      if (sub === null) {
+        // use the npm package web-push installed in your backend to generate a public and private key used to secure push notifications are only sent from your server
+        var vapidPublicKey =
+          "BK_ufyz0UY3B4ZPARoKIkCsCaY3bTfjkkOtVsJkV2vfTNOmdN_2gI63WRbhqA1tHEV6xKGicX4LV19gI-3ckLUA";
+        // you need to convert the key to a Uint8Array which the subscribe method is expecting - use a utility function
+        var convertedVapidPublicKey = urlBase64ToUint8Array(vapidPublicKey);
+
+        // create a new subscription - this creates a new one or overwrites the old existing one if it exists
+        // If anyone finds out what your endpoint is, they can send messages that will look like they're coming from you.
+        // you need to pass in configuration to secure your endpoint
+        return reg.pushManager.subscribe({
+          userVisibleOnly: true, // messages sent are only visible to this user
+          applicationServerKey: convertedVapidPublicKey,
+        });
+      } else {
+        // use existing subscription
+      }
+    })
+    .then(function (newSub) {
+      // returned a new subscription to store in your backend (database)
+      // this creates a subscriptions node if it doesn't exist in firebase
+      return fetch(
+        "https://pwa-practice-app-289604.firebaseio.com/subscriptions.json",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify(newSub),
+        }
+      );
+    })
+    .then(function (response) {
+      if (response.ok) displayConfirmNotification();
+    })
+    .catch(function (err) {
+      console.error(err);
+    });
+}
+```

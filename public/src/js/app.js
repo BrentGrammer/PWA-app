@@ -35,6 +35,65 @@ window.addEventListener("beforeinstallprompt", function (event) {
   return false; // don't do anything upon the event
 });
 
+// set up a subscription to use for push notifications which is done when user clicks the Enable Notifications button
+function configurePushSub() {
+  // check if browser supports service workers:
+  if (!("serviceWorker" in navigator)) return;
+  // save in outer scope to access lower in promise chain
+  var reg;
+
+  navigator.serviceWorker.ready
+    .then(function (swregistration) {
+      reg = swregistration;
+      // access push manager and check for existing subscriptions
+      return swregistration.pushManager.getSubscription(); //returns promise
+    })
+    .then(function (sub) {
+      // subscription will be null if none exist
+      // Note a subscription is per browser/device combo - if another browser on same device is opened, that would be a separate subscription
+      // check if this browser/device combo has a subscription:
+      if (sub === null) {
+        // use the npm package web-push installed in your backend to generate a public and private key used to secure push notifications are only sent from your server
+        var vapidPublicKey =
+          "BK_ufyz0UY3B4ZPARoKIkCsCaY3bTfjkkOtVsJkV2vfTNOmdN_2gI63WRbhqA1tHEV6xKGicX4LV19gI-3ckLUA";
+        // you need to convert the key to a Uint8Array which the subscribe method is expecting - use a utility function
+        var convertedVapidPublicKey = urlBase64ToUint8Array(vapidPublicKey);
+
+        // create a new subscription - this creates a new one or overwrites the old existing one if it exists
+        // If anyone finds out what your endpoint is, they can send messages that will look like they're coming from you.
+        // you need to pass in configuration to secure your endpoint
+        return reg.pushManager.subscribe({
+          userVisibleOnly: true, // messages sent are only visible to this user
+          applicationServerKey: convertedVapidPublicKey,
+        });
+      } else {
+        // use existing subscription
+      }
+    })
+    .then(function (newSub) {
+      // returned a new subscription to store in your backend (database)
+      // this creates a subscriptions node if it doesn't exist in firebase
+      // NOTE: If you unregister you service worker, then you need to clear that subscription from the database
+      return fetch(
+        "https://pwa-practice-app-289604.firebaseio.com/subscriptions.json",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify(newSub),
+        }
+      );
+    })
+    .then(function (response) {
+      if (response.ok) displayConfirmNotification();
+    })
+    .catch(function (err) {
+      console.error(err);
+    });
+}
+
 // this prompts the user for permission
 function askForNotificationPermission() {
   // Note that you also automatically get Push Permissions with Notification Permissions
@@ -45,8 +104,9 @@ function askForNotificationPermission() {
       // if undecided (closed tab, etc.) prompt will come up again next time
       console.log("permission denied.");
     } else {
-      // when you are granted permission show a confirmation notification
-      displayConfirmNotification();
+      // when you are granted permission show a confirmation notification/setup a subscription to send to your server
+      //displayConfirmNotification();
+      configurePushSub();
     }
   });
 }
@@ -91,7 +151,8 @@ function displayConfirmNotification() {
 }
 
 // only show the enable notifications buttons if it is supported in the browser
-if ("Notification" in window) {
+// serviceworker is checked to use push notifications if you're using that
+if ("Notification" in window && "serviceWorker" in navigator) {
   enableNotificationsButtons.forEach((b) => {
     b.style.display = "inline-block";
     b.addEventListener("click", askForNotificationPermission);
