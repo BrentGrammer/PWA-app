@@ -64,6 +64,18 @@ function displayConfirmNotification() {
       badge: "/src/images/icons/app-icon-96x96.png", // shows in the top toolbar - may only apply to Android.  Android automatically masks this icon for you and 96x96 is the recommended size
       tag: "confirm-notification", // other notifications with same tag will be overwritten with subsequent notifications with the same tag so multiple notifications with the same tag will only show the latest
       renotify: true, // new notification with same tag still vibrates and notifies user
+      actions: [
+        {
+          action: "confirm",
+          title: "Okay",
+          icon: "/src/images/icons/app-icon-96x96.png",
+        },
+        {
+          action: "cancel",
+          title: "Cancel",
+          icon: "/src/images/icons/app-icon-96x96.png",
+        },
+      ],
     };
     navigator.serviceWorker.ready.then((swregistration) => {
       // the sw registration is not only the service worker, but extra functionality you can use to handle notifications
