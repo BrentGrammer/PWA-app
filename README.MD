@@ -6,7 +6,7 @@ Built following Maximilian Schwarzmüller's "Progressive Web Apps - Complete Gui
 
 - The code is heavily commented for reference. If you're learning about PWA you may find it useful.
 
-- **Also, [see the `NOTES`](https://github.com/BrentGrammer/PWA---Learning-Project/tree/master/NOTES) folder for a summary of various PWA concepts and strategies.**
+- **Also, [see the `NOTES`](https://github.com/BrentGrammer/PWA-app/tree/master/NOTES) folder for a summary of various PWA concepts and strategies.**
 
 # How to Use
 
