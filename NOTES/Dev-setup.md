@@ -15,6 +15,12 @@
 
 - It's a good idea to add polyfills to your project for `fetch` and `promise` for older browser support since a lot of the service worker code is asynchronous and uses promises and listens for events emitted using `fetch`
 
+### Updating Service Worker on Code Change
+
+- **2 ways to refresh the service worker when changes are made in your code base:**
+  - Go to `Application` -> `Clear Storage` -> `Clear site data` and refresh the page to load the new service worker
+  - Update the version number in your service worker and refresh the browser, click on `skip waiting` and refresh and `activate` if given the option in Dev tools under `Application` -> `Service Workers`
+
 ### Testing/Development
 
 - To retest add to homescreen prompts, you need to click the upper right ellipses menu in the app on the device when you have it open in the device browser and select the `i` button -> site settings -> clear and reset, because chrome saves that the prompt was already answered, and you can't open it again after that.

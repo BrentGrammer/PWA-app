@@ -140,6 +140,9 @@ You at least want to cache the app shell.
     - You need to clean up the old sub-caches as new versions are created
     - note that calling `caches.match(req)` in the sw looks at all caches, so it will find an old file in an old cache if it hasn't been cleaned up.
   - **IMPORTANT:** You need to bump the version name of your cache every time you make an update to cached files outside the service worker (if you don't change the service worker code in your work session)
+    - **NOTE:** An alternative quicker way to get the latest changes in development is to go to the dev tools and clear the site data and refresh:
+      - Go to `Applications -> Clear Storage -> Clear site data`
+      - Refresh the page.
 
 ### Trimming the Cache
 

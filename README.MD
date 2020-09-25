@@ -16,6 +16,14 @@ Once Node.js is installed, open your command prompt or terminal and **navigate i
 
 Finally, run `npm start` to start the development server and visit [localhost:8080](http://localhost:8080) to see the running application.
 
+### Developing:
+
+#### Updating Service Worker on Code Change
+
+- **2 ways to refresh the service worker when changes are made in your code base:**
+  - **EASIEST:** Go to `Application` -> `Clear Storage` -> `Clear site data` and refresh the page to load the new service worker
+  - Update the version number in your service worker and refresh the browser, click on `skip waiting` and refresh and `activate` if given the option in Dev tools under `Application` -> `Service Workers`
+
 ### Note on Google Cloud Functions:
 
 - Will be billed small charge for deploying using Node v10+
