@@ -81,7 +81,7 @@ self.addEventListener("activate", function (event) {
 
 //Cache First with Network Fallback strategy if item isn't already in the cache
 // self.addEventListener("fetch", function (event) {
-//   console.log("Service Worker, fetching....", event);
+
 //   // use event.respondWith() to intercept the request/response and modify it.  If you pass in `null` then the response is overriden with nothing
 //   event.respondWith(
 //     caches.match(event.request).then(function (result) {
@@ -123,7 +123,6 @@ function isInArray(string, array) {
 
 // Cache, then Network Strategy implementation (in combo with code in feed.js fetch section)
 self.addEventListener("fetch", function (event) {
-  console.log("Service Worker, fetching....", event);
   // intercept the fetch from feed.js and store the result in the cache and return res to page
   // with this in place, the network res is cached and a previous cached result is displayed during the request
   const url = "https://pwa-practice-app-289604.firebaseio.com/posts.json";
@@ -193,7 +192,6 @@ self.addEventListener("fetch", function (event) {
 
 // Network First with Cache Fallback strategy - disadvantage is waiting to fail on a slow connection
 // self.addEventListener("fetch", function (event) {
-//   console.log("Service Worker, fetching....", event);
 //   // fetch the resource and handle any error.  No need for a then since you just let the fetch complete
 //   // use event.respondWith() to intercept the request/response and modify it.  If you pass in `null` then the response is overriden with nothing
 //   event.respondWith(
@@ -206,14 +204,12 @@ self.addEventListener("fetch", function (event) {
 
 // Cache-only
 // self.addEventListener("fetch", function (event) {
-//   console.log("Service Worker, fetching....", event);
 //   // Cache Only Strategy - do not fallback to network
 //   event.respondWith(caches.match(event.request));
 // });
 
 //Network-only
 // self.addEventListener("fetch", function (event) {
-//   console.log("Service Worker, fetching....", event);
 //   // Cache Only Strategy - do not fallback to network
 //   event.respondWith(fetch(event.request));
 // });
@@ -286,4 +282,30 @@ self.addEventListener("notificationclick", function (event) {
 
 self.addEventListener("notificationclose", function (event) {
   console.log("notification closed.");
+});
+
+// listen to Push Notifications
+self.addEventListener("push", function (event) {
+  console.log("push notif reveiberd", event);
+
+  // set a fallback data payload if no payload is found on the push notif
+  var data = { title: "Fallback", content: "Fallback content" };
+
+  // check for the payload sent with the push notif
+  if (event.data) {
+    data = JSON.parse(event.data.text()); // need text() to extract the json to a string
+  }
+
+  var options = {
+    body: data.content,
+    icon: "/src/images/icons/app-icon-96x96.png",
+    badge: "/src/images/icons/app-icon-96x96.png",
+  };
+
+  // use waituntil to make sure service worker waits until you show the notification
+  event.waitUntil(
+    // the sw itself cannot show a notification, you need access to the service worker Registration
+    // NOTE: the sw registration is the part that connects the service worker to the browser
+    self.registration.showNotification(data.title, options) //takes title and standard notification options
+  );
 });

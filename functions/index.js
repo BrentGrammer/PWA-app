@@ -51,7 +51,8 @@ exports.storePostData = functions.https.onRequest((request, response) => {
             },
           };
           // sned push notification for each subscription
-          // the second arg is a payload you send with the push notification
+          // the second arg is a payload you send with the push notification (can be anything you want)
+          // (the payload is used for the content you use to display things in the notification). NOTE: there is a limit to the size of data you can send - images may be too big
           // returns a promise, just catch and handle errors
           webpush
             .sendNotification(

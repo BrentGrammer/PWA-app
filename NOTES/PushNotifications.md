@@ -5,6 +5,7 @@
 - Browser Support is decent, though IE is not supported
   - If the feature is not supported, then the notification will simply not be shown and it will not crash the app with an appropriate check
 - Uses the [Notification API](https://developer.mozilla.org/en-US/docs/Web/API/notification) that comes with numerous modern browsers
+- You actually show the push notifications on the client with the Service Worker Registration (this is the part that connects the service worker to the browser)
 
 ### Process
 
@@ -12,8 +13,9 @@
 - Push notifications are sent from servers on Browser Vendor Push servers:
   - Google/Mozilla, etc. own their own servers that send push notifications
 - Push notifications are sent to devices/browsers that have **subscriptions** to the notification service.
-  - Subscriptions are per device/browser combination
+  - **Subscriptions are per device/browser/service worker combination**
     - If you subscribe to notifications on Chrome/Device-A, and also on Firefox/Device-A, then that is two separate subscriptions
+    - If you unregister a service worker and install/reg/activate a new version, all subscriptions for the previous worker are now invalid - each service worker generates it's own subscriptions
   - subscription is managed by the browser and you use the service worker to work with subscriptions
     - The service worker sends a subscription to the backend server to store it there where it will be used by the backend to push messages to the client app
     - You need a backend server to run your own code
@@ -263,11 +265,45 @@ function configurePushSub() {
 }
 ```
 
+### Listening for Push Notifications
+
+- Listen to messages in the Service Worker (it's always running in background most devices)
+- Listen to a `push` event
+
+Ex in your service worker .js file:
+
+```javascript
+self.addEventListener("push", function (event) {
+  // set a fallback data payload if no payload is found on the push notif
+  var data = { title: "Fallback", content: "Fallback content" };
+
+  // check for the payload sent with the push notif
+  if (event.data) {
+    data = JSON.parse(event.data.text()); // need text() to extract the json to a string
+  }
+
+  var options = {
+    body: data.content,
+    icon: "/src/images/icons/app-icon-96x96.png",
+    badge: "/src/images/icons/app-icon-96x96.png",
+  };
+
+  // use waituntil to make sure service worker waits until you show the notification
+  event.waitUntil(
+    // the sw itself cannot show a notification, you need access to the service worker Registration
+    // NOTE: the sw registration is the part that connects the service worker to the browser
+    self.registration.showNotification(data.title, options) //takes title and standard notification options
+  );
+});
+```
+
 ## Backend Setup
 
 - On your server app, where you want to send push notifications, use the web-push package installed to send push notifications.
 - Pass in and use your public/private vapid keys generated with the package and fetch your subscriptions stored in your database
 - For each subscription, use the web-push send command
+- You can send a payload with the notification with data you use to display to the user. Note that there is a size limit and probably can't send images, but you can send urls etc.
+  - Usually you just send a title, text content, and maybe a link to an image
 
 Ex:
 
@@ -298,7 +334,7 @@ exports.storePostData = functions.https.onRequest((request, response) => {
           };
 
           // send push notification for each subscription
-          // the second arg is a payload you send with the push notification
+          // the second arg is a payload you send with the push notification (can be anything you want)
           // returns a promise, just catch and handle errors
           webpush
             .sendNotification(
