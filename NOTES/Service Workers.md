@@ -24,6 +24,7 @@
       - **NOTE** During development, you can open the Application tab in dev tools and click `Skip waiting` to activate the worker immediately
     - Pending state while no operations are happening - the worker is taken out of this state when an event it handles occurs
     - Terminated state
+  - **NOTE** - the service worker registration is the part that connects the service worker to the device browser. It can be accessed programmatically to do things like show push notifications, etc.
 
   ## Scope
 
@@ -63,7 +64,6 @@ self.addEventListener("activate", function (event) {
   return self.clients.claim();
 });
 self.addEventListener("fetch", function (event) {
-  console.log("Service Worker, fetching....", event);
   // use event.respondWith() to intercept the request/response and modify it. If you pass in `null` then the response is overriden with nothing
   event.respondWith(fetch(event.request)); // this just passes the original request to fetch which returns a promise - respondWith expects a promise
 });

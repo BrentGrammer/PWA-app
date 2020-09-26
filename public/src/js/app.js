@@ -50,7 +50,7 @@ function configurePushSub() {
     })
     .then(function (sub) {
       // subscription will be null if none exist
-      // Note a subscription is per browser/device combo - if another browser on same device is opened, that would be a separate subscription
+      // Note a subscription is per browser/device/service worker combo - if another browser on same device is opened, that would be a separate subscription, and if a service worker is unregistered - those subs are then invalid
       // check if this browser/device combo has a subscription:
       if (sub === null) {
         // use the npm package web-push installed in your backend to generate a public and private key used to secure push notifications are only sent from your server

@@ -88,7 +88,6 @@ You at least want to cache the app shell.
 
   ```javascript
   self.addEventListener("fetch", function (event) {
-    console.log("Service Worker, fetching....", event);
     // use event.respondWith() to intercept the request/response and modify it.  If you pass in `null` then the response is overriden with nothing
     event.respondWith(
       caches.match(event.request).then(function (result) {

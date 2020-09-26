@@ -33,9 +33,8 @@ Finally, run `npm start` to start the development server and visit [localhost:80
   - **Enable port forwarding** - click configure and check Enable Port Forwarding
   - Accept the Permissions Prompt on your phone
   - You can now go to http://localhost:<app-port> on your device to view app
-  - You can click `inspect` button in Chrome developer tools after going to `More tools -> Remote devices`
-  - On device, clear Site Settings by going to ellipses menu on top right corner and clicking the `i` information icon => `Site settings`, and then `Clear & reset` to clear the state for testing in development
-  - Refresh the page on the device for a fresh start
+  - You can click `inspect` button in Chrome developer tools after going to `More tools -> Remote devices` to see device in browser
+  - On your android device, clear Site Settings by going to ellipses menu on top right corner and clicking the `i` information icon => `Site settings`, and then `Clear & reset` and refresh the page to clear the state for testing in development
 
 ### Note on Google Cloud Functions:
 
