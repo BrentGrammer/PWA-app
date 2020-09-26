@@ -55,7 +55,7 @@ function configurePushSub() {
       if (sub === null) {
         // use the npm package web-push installed in your backend to generate a public and private key used to secure push notifications are only sent from your server
         var vapidPublicKey =
-          "BK_ufyz0UY3B4ZPARoKIkCsCaY3bTfjkkOtVsJkV2vfTNOmdN_2gI63WRbhqA1tHEV6xKGicX4LV19gI-3ckLUA";
+          "BBq2LFlh9tntYdZA-XtAt7CnOa7Zx4STdM8AV5y8p-vxOf0NfvntuTuM_E-NHRksH-915tFcVai407a-Gp-VVdY";
         // you need to convert the key to a Uint8Array which the subscribe method is expecting - use a utility function
         var convertedVapidPublicKey = urlBase64ToUint8Array(vapidPublicKey);
 

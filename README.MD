@@ -64,6 +64,8 @@ After installing the `web-push` npm package to your backend dependencies (i.e. i
 
 Now generate the keys with `npm run web-push generate-vapid-keys`
 
+(NOTE: The keys are stored in the `secrets.js` file in `/functions`. This is not checked in and if lost/newly pulled from repo, will need to be created again)
+
 - **You only run this once during development.**
 
 - Use the public key generated in the terminal in your client app where you create the subscription for push notifications

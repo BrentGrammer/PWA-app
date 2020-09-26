@@ -150,6 +150,7 @@ self.addEventListener("notificationclose", function (event) {
 - Store subscriptions on a server which is used to send notifications to subscribers (Browser/Devices subscribed)
 - Subscriptions are per browser/device combination and are also associated with a specific service worker (if a new service worker is installed, this renders the previous subscription useless)
   - This does not apply if there is only a code change and the service worker is not uninstalled - (i.e. if you clear site data)
+  - **Key Takeaway: If you unregister you service worker, then you need to clear that subscription from the database**
 
 ### Creating a Subscription
 
@@ -176,6 +177,8 @@ After installing the `web-push` npm package to your backend dependencies, setup 
 Now generate the keys with `npm run web-push generate-vapid-keys`
 
 - **You only run this once during development.**
+
+## Front End Setup
 
 - Use the public key generated in the terminal in your client app where you create the subscription for push notifications
 
@@ -258,4 +261,52 @@ function configurePushSub() {
       console.error(err);
     });
 }
+```
+
+## Backend Setup
+
+- On your server app, where you want to send push notifications, use the web-push package installed to send push notifications.
+- Pass in and use your public/private vapid keys generated with the package and fetch your subscriptions stored in your database
+- For each subscription, use the web-push send command
+
+Ex:
+
+```javascript
+exports.storePostData = functions.https.onRequest((request, response) => {
+  return cors(request, response, function () {
+   databaseStuff
+      .then(() => {
+        // add vapid key security for push notifications (ensures they only come from your server to users)
+        // pass identifier of self(email addr), the vapid public key, and the private vapid key (generated with npm package)
+        webpush.setVapidDetails(
+          "mailto:myemail@email.com",
+          KEYS.publicVapidKey,
+          KEYS.secretVapidKey
+        );
+        // fetch subscriptions to send push notifications to
+        return admin.database().ref("subscriptions").once("value"); // get value of the node once in fb
+      })
+      .then((subscriptions) => {
+        subscriptions.forEach((sub) => {
+          // config sent to web push
+          const pushConfig = {
+            endpoint: sub.val().endpoint, // the endpoint for the browser vendor server
+            keys: {
+              auth: sub.val().keys.auth,
+              p256dh: sub.val().keys.p256dh,
+            },
+          };
+
+          // send push notification for each subscription
+          // the second arg is a payload you send with the push notification
+          // returns a promise, just catch and handle errors
+          webpush
+            .sendNotification(
+              pushConfig,
+              JSON.stringify({ title: "New post", content: "New Post added" })
+            )
+            .catch((err) => {
+              console.error(err);
+            });
+        });
 ```
