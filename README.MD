@@ -10,19 +10,24 @@ Built following Maximilian Schwarzmüller's "Progressive Web Apps - Complete Gui
 
 # How to Use
 
-You need [Node.js](https://nodejs.org) installed on your machine. Simply download the installer from [nodejs.org](https://nodejs.org) and go through the installation steps.
+### Pre-requisites
 
-Once Node.js is installed, open your command prompt or terminal and **navigate into this project folder**. There, run `npm install` to install all required dependencies.
+- You need [Node.js](https://nodejs.org) from [nodejs.org](https://nodejs.org)
+- `secrets.js` for push notifications to work (private file)
 
-Finally, run `npm start` to start the development server and visit [localhost:8080](http://localhost:8080) to see the running application.
+### Running the app in development:
 
-### Developing:
+- run `npm install` to install all required dependencies.
+- run `npm start` to start the development server and visit [localhost:8080](http://localhost:8080)
 
-#### Updating Service Worker on Code Change
+## Developing:
 
-- **2 ways to refresh the service worker when changes are made in your code base:**
-  - **EASIEST:** Go to `Application` -> `Clear Storage` -> `Clear site data` and refresh the page to load the new service worker
+### Updating Service Worker on Code Change
+
+- **3 ways to refresh the service worker when changes are made in your code base:**
+  - Go to `Application` -> `Clear Storage` -> `Clear site data` and refresh the page to load the new service worker
   - Update the version number in your service worker and refresh the browser, click on `skip waiting` and refresh and `activate` if given the option in Dev tools under `Application` -> `Service Workers`
+  - Refresh the page to update the service worker code, and close the tab of your app. Then re-open a new one. Use this approach if you want to test something that requires you keep the same service worker around - i.e. if you're testing push notifications and need to retain the subscriptions for the sw.
 
 ### Hook up your device to chrome dev tools:
 

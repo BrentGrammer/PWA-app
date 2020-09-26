@@ -83,6 +83,9 @@ navigator.serviceWorker.getRegistrations().then(function (registrations) {
 });
 ```
 
+- You can access `clients` in your service worker code which refers to all windows or browser tasks that the service worker is managing
+  - You can use this to for example, open a new page when a notification is clicked, etc.
+
 ### Difference b/w Web Worker and Service Worker:
 
 - Service Workers are a special type of Web Workers. Web Workers also run on a background thread, decoupled from the DOM. They don't keep on living after the page is closed though. The Service Worker on the other hand, keeps on running (depending on the operating system) and also is decoupled from an individual page.

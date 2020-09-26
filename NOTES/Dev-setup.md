@@ -24,9 +24,10 @@
 
 ### Updating Service Worker on Code Change
 
-- **2 ways to refresh the service worker when changes are made in your code base:**
+- **3 ways to refresh the service worker when changes are made in your code base:**
   - Go to `Application` -> `Clear Storage` -> `Clear site data` and refresh the page to load the new service worker
   - Update the version number in your service worker and refresh the browser, click on `skip waiting` and refresh and `activate` if given the option in Dev tools under `Application` -> `Service Workers`
+  - Refresh the page to update the service worker code, and close the tab of your app. Then re-open a new one. Use this approach if you want to test something that requires you keep the same service worker around - i.e. if you're testing push notifications and need to retain the subscriptions for the sw.
 
 ### Testing/Development
 

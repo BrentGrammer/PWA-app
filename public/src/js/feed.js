@@ -151,7 +151,6 @@ function sendData() {
       }),
     }
   ).then(function (res) {
-    console.log("sent data over the wire ", res);
     updateUI();
   });
 }
