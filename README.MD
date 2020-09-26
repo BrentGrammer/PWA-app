@@ -55,6 +55,10 @@ Built following Maximilian Schwarzmüller's "Progressive Web Apps - Complete Gui
 "engines": {"node": "8"}
 ```
 
+#### Making Changes to functions code:
+
+- After making your changes, run `firebase deploy` in the cli
+
 ## Generating VAPID keys for Push Notification Security:
 
 After installing the `web-push` npm package to your backend dependencies (i.e. in the `functions` folder package.json), setup a new script in your `package.json` to start the package script.
