@@ -94,6 +94,7 @@ if ("serviceWorker" in navigator) {
 - `tag`: accepts a string to tag the notification. Acts like an Id for the notification. If you send other notifications with the same tag, they will stack on top of each other instead of displaying beneath each other. i.e. the latest notification with the same tag will replace the previous one.
   - Note: some operating systems do not allow more than one notification at a time, but if they allow multiple notifications at a time this can be useful to only display one of those with the same tag.
 - `renotify`: accepts bool true/false. new notification with same tag still vibrates and notifies user
+- `data`: You can set this to metadata that you can, for example, pass to the `notificationclick` listener. I.e. could contain a url to open when the notification is clicked, etc.
 - `actions`: takes an array where you can specify multiple actions. Each action is an object.
 
   - **You should not rely on these being displayed for the user to tap on. It depends on the device and system. It's safer to simply rely on a user tapping on the notification without having the option for different actions.**
@@ -345,4 +346,72 @@ exports.storePostData = functions.https.onRequest((request, response) => {
               console.error(err);
             });
         });
+```
+
+## Opening a Page from a Notification click
+
+- You can use `clients` which is all windows/browser tasks managed by the service worker
+
+- You can pass metadata to the push notification which is displayed in your app which can then be accessed in things like the `notificationclick` handler
+  - Store a url which is set by the back end in this example and passed with the response. You pass it to the notification shown and it is then used in the click handler to direct the user to a page.
+
+```javascript
+self.addEventListener("push", function (event) {
+  var data = { title: "Fallback", content: "Fallback content", openUrl: "/" };
+
+  if (event.data) {
+    data = JSON.parse(event.data.text()); // need text() to extract the json to a string
+  }
+
+  var options = {
+    body: data.content,
+    icon: "/src/images/icons/app-icon-96x96.png",
+    badge: "/src/images/icons/app-icon-96x96.png",
+    data: { openUrl: data.openUrl }, // data is used to pass metadata you can use - in this case it is used in the notificationclick listener.  The openUrl is set on the backend in index.js
+  };
+
+  event.waitUntil(
+    self.registration.showNotification(data.title, options) //takes title and standard notification options
+  );
+});
+```
+
+- Handle navigation to the page on notification click:
+
+```javascript
+self.addEventListener("notificationclick", function (event) {
+  var notification = event.notification;
+  var action = event.action; // this matches up to the id set up in the `action` prop in app.js
+
+  if (action === "confirm") {
+    console.log("confirm was chosen");
+    notification.close();
+  } else {
+    // this is how to open a new page is opened from a notification
+    // go to a page the user has open for the app if there is one, or open a window and go to a page
+    // use waituntil to tell the service worker not to continue until the page has been opened and this code has run
+    event.waitUntil(
+      // clients refers to all windows or browser tasks related to this service worker
+      clients.matchAll().then(function (clis) {
+        // find windows managed by service worker that are visible (open windows where our app is running)
+        var client = clis.find(function (c) {
+          // find the first app window that is visible
+          return c.visibilityState === "visible";
+        });
+
+        console.log({ client }, clis.length);
+
+        if (client !== undefined) {
+          // if window is open, then go to a page url passed in:
+          client.navigate(notification.data.openUrl); // comes from the data payload passed with the push notification on your server
+          client.focus();
+        } else {
+          // if no open window then open one with the clients API
+          clients.openWindow(notification.data.openUrl);
+        }
+        notification.close();
+      })
+    );
+  }
+});
 ```

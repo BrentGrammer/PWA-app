@@ -113,7 +113,6 @@ function isInArray(string, array) {
   var cachePath;
   if (string.indexOf(self.origin) === 0) {
     // request targets domain where we serve the page from (i.e. NOT a CDN)
-    console.log("matched ", string);
     cachePath = string.substring(self.origin.length); // take the part of the URL AFTER the domain (e.g. after localhost:8080)
   } else {
     cachePath = string; // store the full request (for CDNs)
@@ -252,7 +251,6 @@ function syncData(dt) {
     }),
   })
     .then(function (res) {
-      console.log("sent data over the wire ", res);
       // clean up and remove the post data for the task stored in indexedDB
       if (res.ok) {
         deleteItemFromData("sync-posts", dt.id);
@@ -275,8 +273,31 @@ self.addEventListener("notificationclick", function (event) {
     // close the notification - it does not close automatically on some OSs (android)
     notification.close();
   } else {
-    console.log(action);
-    notification.close();
+    // this is how to open a new page is opened from a notification
+    // go to a page the user has open for the app if there is one, or open a window and go to a page
+    // use waituntil to tell the service worker not to continue until the page has been opened and this code has run
+    event.waitUntil(
+      // clients refers to all windows or browser tasks related to this service worker
+      clients.matchAll().then(function (clis) {
+        // find windows managed by service worker that are visible (open windows where our app is running)
+        var client = clis.find(function (c) {
+          // find the first app window that is visible
+          return c.visibilityState === "visible";
+        });
+
+        console.log({ client }, clis.length);
+
+        if (client !== undefined) {
+          // if window is open, then go to a page url passed in:
+          client.navigate(notification.data.openUrl); // comes from the data payload passed with the push notification on your server
+          client.focus();
+        } else {
+          // if no open window then open one with the clients API
+          clients.openWindow(notification.data.openUrl);
+        }
+        notification.close();
+      })
+    );
   }
 });
 
@@ -289,7 +310,7 @@ self.addEventListener("push", function (event) {
   console.log("push notif reveiberd", event);
 
   // set a fallback data payload if no payload is found on the push notif
-  var data = { title: "Fallback", content: "Fallback content" };
+  var data = { title: "Fallback", content: "Fallback content", openUrl: "/" };
 
   // check for the payload sent with the push notif
   if (event.data) {
@@ -300,6 +321,7 @@ self.addEventListener("push", function (event) {
     body: data.content,
     icon: "/src/images/icons/app-icon-96x96.png",
     badge: "/src/images/icons/app-icon-96x96.png",
+    data: { openUrl: data.openUrl }, // data is used to pass metadata you can use - in this case it is used in the notificationclick listener.  The openUrl is set on the backend in index.js
   };
 
   // use waituntil to make sure service worker waits until you show the notification

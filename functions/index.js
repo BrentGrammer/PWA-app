@@ -44,20 +44,24 @@ exports.storePostData = functions.https.onRequest((request, response) => {
         subscriptions.forEach((sub) => {
           // config sent to web push
           const pushConfig = {
-            endpoint: sub.val().endpoint, // the endpoint for the browser vendor server
+            endpoint: sub.val().endpoint, // the endpoint for the browser vendor server stored in the subscription in the database
             keys: {
               auth: sub.val().keys.auth,
               p256dh: sub.val().keys.p256dh,
             },
           };
           // sned push notification for each subscription
-          // the second arg is a payload you send with the push notification (can be anything you want)
-          // (the payload is used for the content you use to display things in the notification). NOTE: there is a limit to the size of data you can send - images may be too big
+          // the second arg is a payload you send with the push notification
+          // (the payload is used by the front end.  Pass whatever you want, this is not predefined). NOTE: there is a limit to the size of data you can send - images may be too big
           // returns a promise, just catch and handle errors
           webpush
             .sendNotification(
               pushConfig,
-              JSON.stringify({ title: "New post", content: "New Post added" })
+              JSON.stringify({
+                title: "New post",
+                content: "New Post added",
+                openUrl: "/help", // used to tell front end what page to open when notification is clicked - this is absolute from the server/domain, can be any url
+              })
             )
             .catch((err) => {
               console.error(err);
