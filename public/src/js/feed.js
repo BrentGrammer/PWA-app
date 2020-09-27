@@ -7,10 +7,69 @@ var sharedMomentsArea = document.querySelector("#shared-moments");
 var form = document.querySelector("form");
 var titleInput = document.querySelector("#title");
 var locationInput = document.querySelector("#location");
+var videoPlayer = document.querySelector("#player");
+var canvasElement = document.querySelector("#canvas");
+var captureButton = document.querySelector("#capture-btn");
+var imagePicker = document.querySelector("#image-picker");
+var imagePickerArea = document.querySelector("#pick-image");
+
+// initialize the camera or the media feature depending on what the device supports
+// Set a polyfill for navigator.getUserMedia if the browser is older or handle lack of support
+// this allows you to use getUserMedia without different syntax for older implementations
+function initializeMedia() {
+  // mediaDevices is the API that gives us access to the device camera/microphone
+  if (!("mediaDevices" in navigator)) {
+    // if mediaDevices is not supported, then you can make a polyfill by adding it to the navigator object
+    navigator.mediaDevices = {};
+  }
+
+  // if the browser does have mediaDevices, then it'll have getUserMedia. We can now implement our own polyfill
+  if (!("getUserMedia" in navigator.mediaDevices)) {
+    // there are older camera access implementations.  You now make your polyfill with constraints (constraints tell us, is it audio of video to capture?)
+    navigator.mediaDevices.getUserMedia = function (constraints) {
+      // some older browsers have their own implementations that already exist, which you can simply bind to the getUserMedia to use the new syntax in your app
+      // safari uses a webkit implementation and older Mozilla browsers have their own as well
+      var getUserMedia =
+        navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+
+      // if the browser has no older implementation, then the feature cannot be supported
+      if (!getUserMedia) {
+        // the modern getUserMedia returns a Promise, so keep this functionality
+        return Promise.reject(new Error("getUserMedia is not implemented."));
+      }
+
+      return new Promise(function (resolve, reject) {
+        // call getUserMedia setting `this` to the navigator, so you can call it like you would the modern getUserMedia on older browsers
+        getUserMedia.call(navigator, constraints, resolve, reject);
+      });
+    };
+  }
+
+  // getUserMedia takes a constraints object which you can set audio or video or both to true/false
+  // Ex: { video: true, audio: true }
+  navigator.mediaDevices
+    .getUserMedia({ video: true })
+    .then(function (stream) {
+      // Permissions will automatically ask user the first time you access the camera
+      // if user declines permission prompt, then promise will reject and you handle it in the catch block
+
+      // output the stream you get from getUserMedia promise
+      // set the stream to the video player which is also set to autoplay so the user will see the live stream
+      videoPlayer.srcObject = stream;
+      // show the video player
+      videoPlayer.style.display = "block";
+    })
+    .catch(function (err) {
+      // if there is any error from getUserMedia, just show the fallback image file picker
+      imagePickerArea.style.display = "block";
+    });
+}
 
 function openCreatePostModal() {
   // animate section up
   createPostArea.style.transform = "translateY(0)";
+  // set polyfill to access camera for older browsers and handle showing fallback if there is an error
+  initializeMedia();
   // check if there is the deferred prompt set in app.js - we want to show our install to homescreen banner when user clicks add button
   if (deferredPrompt) {
     // can only do this because chrome already prompted event for install to homescreen before this
@@ -41,6 +100,10 @@ function openCreatePostModal() {
 
 function closeCreatePostModal() {
   createPostArea.style.transform = "translateY(100vh)";
+  // hide the video player and image file picker when closing
+  imagePickerArea.style.display = "none";
+  videoPlayer.style.display = "none";
+  canvasElement.style.display = "none";
 }
 
 // saves card information to cache when user clicks save
