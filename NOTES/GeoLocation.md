@@ -51,3 +51,7 @@ locationBtn.addEventListener("click", function (event) {
   );
 });
 ```
+
+## Further Resources:
+
+- How to use geolocation: https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/Using_geolocation

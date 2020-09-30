@@ -208,3 +208,8 @@ form.addEventListener("submit", function (event) {
   }
 });
 ```
+
+## Further Resources:
+
+- More about the Media Stream API on MDN: https://developer.mozilla.org/en-US/docs/Web/API/Media_Streams_API/Constraints
+- More about getUserMedia: https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia
