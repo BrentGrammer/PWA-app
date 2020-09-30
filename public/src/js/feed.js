@@ -16,7 +16,7 @@ var picture;
 
 var locationBtn = document.querySelector("#location-btn");
 var locationLoader = document.querySelector("#location-loader");
-var fetchedLocation;
+var fetchedLocation = { lat: 0, lng: 0 };
 
 // Get user's location:
 locationBtn.addEventListener("click", function (event) {
@@ -24,6 +24,7 @@ locationBtn.addEventListener("click", function (event) {
   if (!("geolocation" in navigator)) {
     return;
   }
+  var sawAlert = false; // prevent alert from popping up again if timeout throws
 
   // UI feedback, loader etc.
   locationBtn.style.display = "none";
@@ -48,12 +49,15 @@ locationBtn.addEventListener("click", function (event) {
       console.error(err);
       locationBtn.style.display = "none";
       locationLoader.style.display = "block";
-      alert("Problem fetching location.");
-      fetchedLocation = { lat: null, lng: null };
+      if (!sawAlert) {
+        sawAlert = true;
+        alert("Problem fetching location.");
+      }
+      fetchedLocation = { lat: 0, lng: 0 }; //setting to null causes network error extracting null for formdata
     },
     {
       // time to get position and after it fails
-      timeout: 7000,
+      timeout: 7000, // NOTE: a new error will be thrown if this timeout is reached and the error callback will be called again!
     }
   );
 });
@@ -150,7 +154,10 @@ function initializeMedia() {
 
 function openCreatePostModal() {
   // animate section up
-  createPostArea.style.transform = "translateY(0)";
+  // do not run animation simultaneously with other ui blocking threads
+  setTimeout(function () {
+    createPostArea.style.transform = "translateY(0)";
+  }, 1);
   // set polyfill to access camera for older browsers and handle showing fallback if there is an error
   initializeMedia();
   initializeLocation();
@@ -189,6 +196,7 @@ function closeCreatePostModal() {
   canvasElement.style.display = "none";
   locationBtn.style.display = "inline";
   locationLoader.style.display = "none";
+  captureButton.style.display = "inline";
   // turn off the camera - check the srcObject on the video element which is only set if there is a stream
   if (videoPlayer.srcObject) {
     // stop all tracks
@@ -197,7 +205,7 @@ function closeCreatePostModal() {
   // to make closing the modal transition more smooth since stopping the player takes up resources and blocks the UI thread, use a setTimeout
   setTimeout(function () {
     createPostArea.style.transform = "translateY(100vh)";
-  });
+  }, 1);
 }
 
 // saves card information to cache when user clicks save
