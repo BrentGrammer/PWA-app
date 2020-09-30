@@ -24,6 +24,7 @@ Built following Maximilian Schwarzmüller's "Progressive Web Apps - Complete Gui
 
 ### Updating Service Worker on Code Change
 
+- **If you change code outside of your service worker, but not the service worker code, then you need to keep a version that you bump to trigger a reinstallation of the sw (i.e. in a const string)**
 - **3 ways to refresh the service worker when changes are made in your code base:**
   - Go to `Application` -> `Clear Storage` -> `Clear site data` and refresh the page to load the new service worker. Note this will clear any subscriptions you have setup on the sw like for push notifications.
   - If code outside your service worker is changed: Update the version number in your service worker and refresh the browser, click on `skip waiting` and refresh and `activate` if given the option in Dev tools under `Application` -> `Service Workers`. You may need to refresh, close and re-open the tab
@@ -100,6 +101,8 @@ Now generate the keys with `npm run web-push generate-vapid-keys`
 ## Troubleshooting
 
 - `firebase init` to setup cloud functions, you may need to logout and login with `firebase logout` and `firebase login` before running `firebase init` if you get an error when trying to add to an existing project
+- CORS errors for requests: Check the firebase function logs for possible cause - the issue may not be related to CORS and could be misleading.
+  - Sometimes can be caused by no billing setup for the project for example.
 
 ## Packages
 

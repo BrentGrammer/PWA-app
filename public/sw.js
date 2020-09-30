@@ -4,8 +4,8 @@ importScripts("/src/js/utility.js");
 
 // For cache versioning. Anytime you change any of your cached assets (code other than your service worker), bump these version numbers up.
 // the reason is that the old cached version of the asset (i.e. a javascript file is being used by the app)
-var CACHE_STATIC_NAME = "static-v32";
-var CACHE_DYNAMIC_NAME = "dynamic-v15";
+var CACHE_STATIC_NAME = "static-v3";
+var CACHE_DYNAMIC_NAME = "dynamic-v16";
 
 var STATIC_FILES = [
   "/", // you need to cache this request to the root first!

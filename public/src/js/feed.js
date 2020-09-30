@@ -42,7 +42,7 @@ locationBtn.addEventListener("click", function (event) {
       locationInput.value =
         "Use Google Geocoding API here to get address etc for display to the user";
 
-      locationInput.classList.add("is-focused");
+      document.querySelector("#manual-location").classList.add("is-focused");
     },
     (err) => {
       console.error(err);
