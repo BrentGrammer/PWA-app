@@ -225,13 +225,15 @@ self.addEventListener("sync", function (event) {
     // wait for event sending the data is finished
     event.waitUntil(
       readAllData("sync-posts").then(function (data) {
-        // loop through data if user sent more than one post to sync
+        // loop through data in indexedDB if user sent more than one post to sync
         for (var dt of data) {
           // we send formData now, not application/json, which includes our image BLOB taken for the post:
           var postData = new FormData();
           postData.append("id", dt.id);
           postData.append("title", dt.title);
           postData.append("location", dt.location);
+          postData.append("rawLocationLat", dt.rawLocation.lat); // rawLocation is what we're storing in indexedDB in feed.js from getting the position
+          postData.append("rawLocationLng", dt.rawLocation.lng);
           postData.append("file", dt.picture, dt.id + ".png"); // you can overwrite the name of a file with the third argument.  You may also want to get the mime type to append instead of hardcoding png
 
           syncData(postData);

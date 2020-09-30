@@ -14,6 +14,57 @@ var imagePicker = document.querySelector("#image-picker");
 var imagePickerArea = document.querySelector("#pick-image");
 var picture;
 
+var locationBtn = document.querySelector("#location-btn");
+var locationLoader = document.querySelector("#location-loader");
+var fetchedLocation;
+
+// Get user's location:
+locationBtn.addEventListener("click", function (event) {
+  // check if geolocation is supported first
+  if (!("geolocation" in navigator)) {
+    return;
+  }
+
+  // UI feedback, loader etc.
+  locationBtn.style.display = "none";
+  locationLoader.style.display = "block";
+
+  // this will prompt the user for permission
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      locationBtn.style.display = "none";
+      locationLoader.style.display = "none";
+      // you have access to latitude and longitude coords (use them with Google's Geocoding API etc. if you want)
+      fetchedLocation = {
+        lat: position.coords.latitude,
+        lng: position.coords.longitude,
+      };
+      locationInput.value =
+        "Use Google Geocoding API here to get address etc for display to the user";
+
+      locationInput.classList.add("is-focused");
+    },
+    (err) => {
+      console.error(err);
+      locationBtn.style.display = "none";
+      locationLoader.style.display = "block";
+      alert("Problem fetching location.");
+      fetchedLocation = { lat: null, lng: null };
+    },
+    {
+      // time to get position and after it fails
+      timeout: 7000,
+    }
+  );
+});
+
+// check if geolocation is supported:
+function initializeLocation() {
+  if (!("geolocation" in navigator)) {
+    locationBtn.style.display = "none";
+  }
+}
+
 // initialize the camera or the media feature depending on what the device supports
 // Set a polyfill for navigator.getUserMedia if the browser is older or handle lack of support
 // this allows you to use getUserMedia without different syntax for older implementations
@@ -102,6 +153,7 @@ function openCreatePostModal() {
   createPostArea.style.transform = "translateY(0)";
   // set polyfill to access camera for older browsers and handle showing fallback if there is an error
   initializeMedia();
+  initializeLocation();
   // check if there is the deferred prompt set in app.js - we want to show our install to homescreen banner when user clicks add button
   if (deferredPrompt) {
     // can only do this because chrome already prompted event for install to homescreen before this
@@ -136,6 +188,8 @@ function closeCreatePostModal() {
   imagePickerArea.style.display = "none";
   videoPlayer.style.display = "none";
   canvasElement.style.display = "none";
+  locationBtn.style.display = "inline";
+  locationLoader.style.display = "none";
 }
 
 // saves card information to cache when user clicks save
@@ -229,6 +283,7 @@ if ("indexedDB" in window) {
 }
 
 // used as fallback if no service worker support in browser, just send data to network
+// otherwise the sync event listener in the sw.js will send a request with this data
 function sendData() {
   var id = new Date().toISOString();
   // since we are sending a file for the image now, we send FormData instead of just JSON
@@ -236,6 +291,8 @@ function sendData() {
   postData.append("id", id);
   postData.append("title", titleInput.value);
   postData.append("location", locationInput.value);
+  postData.append("rawLocationLat", fetchedLocation.lat);
+  postData.append("rawLocationLng", fetchedLocation.lng);
   postData.append("file", picture, id + ".png"); // you can overwrite the name of a file with the third argument.  You may also want to get the mime type to append instead of hardcoding png
 
   fetch(
@@ -266,6 +323,7 @@ form.addEventListener("submit", function (event) {
         title: titleInput.value,
         location: locationInput.value,
         picture: picture,
+        rawLocation: fetchedLocation, // storing these vals in indexedDB
       };
       //store the data to send in a separate table in indexedDB
       writeData("sync-posts", post)
