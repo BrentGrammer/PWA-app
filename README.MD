@@ -100,3 +100,9 @@ Now generate the keys with `npm run web-push generate-vapid-keys`
 ## Troubleshooting
 
 - `firebase init` to setup cloud functions, you may need to logout and login with `firebase logout` and `firebase login` before running `firebase init` if you get an error when trying to add to an existing project
+
+## Packages
+
+- `busboy` - to read parsed form data from firebase on backend from a buffer
+- `@google-cloud/storage`: Allows you to save files to google cloud storage on the backend
+- `uuid-v4` - used to generate a public url to download file uploads from google cloud storage on the server

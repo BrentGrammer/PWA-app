@@ -16,6 +16,7 @@ var STATIC_FILES = [
   "/src/js/promise.js",
   "/src/js/fetch.js",
   "/src/js/idb.js",
+  "/src/js/utility.js",
   "/src/js/material.min.js",
   "src/css/app.css",
   "src/css/feed.css",
