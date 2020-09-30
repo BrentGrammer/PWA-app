@@ -183,13 +183,21 @@ function openCreatePostModal() {
 }
 
 function closeCreatePostModal() {
-  createPostArea.style.transform = "translateY(100vh)";
   // hide the video player and image file picker when closing
   imagePickerArea.style.display = "none";
   videoPlayer.style.display = "none";
   canvasElement.style.display = "none";
   locationBtn.style.display = "inline";
   locationLoader.style.display = "none";
+  // turn off the camera - check the srcObject on the video element which is only set if there is a stream
+  if (videoPlayer.srcObject) {
+    // stop all tracks
+    videoPlayer.srcObject.getVideoTracks().forEach((track) => track.stop());
+  }
+  // to make closing the modal transition more smooth since stopping the player takes up resources and blocks the UI thread, use a setTimeout
+  setTimeout(function () {
+    createPostArea.style.transform = "translateY(100vh)";
+  });
 }
 
 // saves card information to cache when user clicks save

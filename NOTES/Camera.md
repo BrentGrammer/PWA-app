@@ -144,6 +144,18 @@ captureButton.addEventListener("click", function (event) {
 });
 ```
 
+### Turn off the Camera
+
+- Make sure that the camera does not keep running or streaming when you are done capturing the picture:
+
+```javascript
+// turn off the camera - check the srcObject on the video element which is only set if there is a stream
+if (videoPlayer.srcObject) {
+  // stop all tracks
+  videoPlayer.srcObject.getVideoTracks().forEach((track) => track.stop());
+}
+```
+
 ### Storing the image on the backend
 
 - When you capture the image in the canvas, it exists as a base64Url
