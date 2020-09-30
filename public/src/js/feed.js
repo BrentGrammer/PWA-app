@@ -72,6 +72,11 @@ function initializeMedia() {
     picture = dataURItoBlob(canvasElement.toDataURL());
   });
 
+  // Fallback to use imagePicker
+  imagePicker.addEventListener("change", function (event) {
+    picture = event.target.files[0];
+  });
+
   // getUserMedia takes a constraints object which you can set audio or video or both to true/false
   // Ex: { video: true, audio: true }
   navigator.mediaDevices
