@@ -12,6 +12,7 @@ var canvasElement = document.querySelector("#canvas");
 var captureButton = document.querySelector("#capture-btn");
 var imagePicker = document.querySelector("#image-picker");
 var imagePickerArea = document.querySelector("#pick-image");
+var picture;
 
 // initialize the camera or the media feature depending on what the device supports
 // Set a polyfill for navigator.getUserMedia if the browser is older or handle lack of support
@@ -44,6 +45,32 @@ function initializeMedia() {
       });
     };
   }
+
+  captureButton.addEventListener("click", function (event) {
+    // show canvas to capture a snapshot from the video stream
+    canvasElement.style.display = "block";
+    // hide the video player
+    videoPlayer.style.display = "none";
+    captureButton.style.display = "none";
+    // store context for the canvas (context is where you intialize how you want to draw on the canvas)
+    var context = canvasElement.getContext("2d");
+    // this height for the image maintains the aspect ratio when entering it into the canvas:
+    var canvasImageHeight =
+      videoPlayer.videoHeight / (videoPlayer.videoWidth / canvas.width);
+    // draw the image from the video stream to the canvas
+    // the first arg is the image element - use the videoplayer which will automatically give you the stream
+    // the other args are the boundaries/dimensions of where to draw on the canvas (0,0 is xy for start top left and draw to bottom right, then you set the width and the height)
+    context.drawImage(videoPlayer, 0, 0, canvas.width, canvasImageHeight);
+    // You need to turn off the camera
+    // get all running tracks off the video element and stop them all:
+    videoPlayer.srcObject.getVideoTracks().forEach(function (track) {
+      track.stop();
+    });
+    // the image in the canvas is a base64Url and we need a Blob/File to store in the backend - convert it with a util function
+    // storing this to send with the FormData in sendData() function below
+    // this is also stored in indexedDB in the 'sunmit' listener below for caching and background sync
+    picture = dataURItoBlob(canvasElement.toDataURL());
+  });
 
   // getUserMedia takes a constraints object which you can set audio or video or both to true/false
   // Ex: { video: true, audio: true }
@@ -198,20 +225,19 @@ if ("indexedDB" in window) {
 
 // used as fallback if no service worker support in browser, just send data to network
 function sendData() {
+  var id = new Date().toISOString();
+  // since we are sending a file for the image now, we send FormData instead of just JSON
+  var formData = new FormData();
+  postData.append("id", id);
+  postData.append("title", titleInput.value);
+  postData.append("location", locationInput.value);
+  postData.append("file", picture, id + ".png"); // you can overwrite the name of a file with the third argument.  You may also want to get the mime type to append instead of hardcoding png
+
   fetch(
     "https://us-central1-pwa-practice-app-289604.cloudfunctions.net/storePostData",
     {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify({
-        id: new Date().toISOString(),
-        title: titleInput.value,
-        location: locationInput.value,
-        image: "image url",
-      }),
+      body: formData,
     }
   ).then(function (res) {
     updateUI();
@@ -234,7 +260,7 @@ form.addEventListener("submit", function (event) {
         id: new Date().toISOString(),
         title: titleInput.value,
         location: locationInput.value,
-        image: "image-url",
+        picture: picture,
       };
       //store the data to send in a separate table in indexedDB
       writeData("sync-posts", post)

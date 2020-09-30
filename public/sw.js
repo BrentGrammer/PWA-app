@@ -4,7 +4,7 @@ importScripts("/src/js/utility.js");
 
 // For cache versioning. Anytime you change any of your cached assets (code other than your service worker), bump these version numbers up.
 // the reason is that the old cached version of the asset (i.e. a javascript file is being used by the app)
-var CACHE_STATIC_NAME = "static-v31";
+var CACHE_STATIC_NAME = "static-v32";
 var CACHE_DYNAMIC_NAME = "dynamic-v15";
 
 var STATIC_FILES = [
@@ -226,29 +226,33 @@ self.addEventListener("sync", function (event) {
       readAllData("sync-posts").then(function (data) {
         // loop through data if user sent more than one post to sync
         for (var dt of data) {
-          syncData(dt);
+          // we send formData now, not application/json, which includes our image BLOB taken for the post:
+          var postData = new FormData();
+          postData.append("id", dt.id);
+          postData.append("title", dt.title);
+          postData.append("location", dt.location);
+          postData.append("file", dt.picture, dt.id + ".png"); // you can overwrite the name of a file with the third argument.  You may also want to get the mime type to append instead of hardcoding png
+
+          syncData(postData);
         }
       })
     );
   }
 });
 
-function syncData(dt) {
+function syncData(postData) {
   // fetch url is to a google cloud function
   const url =
     "https://us-central1-pwa-practice-app-289604.cloudfunctions.net/storePostData ";
   return fetch(url, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-    },
-    body: JSON.stringify({
-      id: dt.id,
-      title: dt.title,
-      location: dt.location,
-      image: "image url",
-    }),
+    // We don't need headers now and want to be able to accept form data for storing the image taken for a post from the camera
+    // if we don't have any headers, then the type of data will automatically be inferred, so we remove the headers parameter sent with the request
+    // headers: {
+    //   "Content-Type": "application/json",
+    //   Accept: "application/json",
+    // },
+    body: postData,
   })
     .then(function (res) {
       // clean up and remove the post data for the task stored in indexedDB
