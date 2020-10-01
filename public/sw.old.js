@@ -139,11 +139,13 @@ self.addEventListener("fetch", function (event) {
       fetch(event.request).then(function (res) {
         // can trim the cache to free up resources
         //trimCache(CACHE_DYNAMIC_NAME, 3); // you can look up memory limits for the cache for different browsers
+
+        // store this dynamic data in indexedDB.  Make a clone, Transform and store it
+        var clonedRes = res.clone();
+
         // clear storage in indexedDB to prevent sync errors (deleted item from backednd remaining stored in cache)
         clearAllData("posts")
           .then(function () {
-            // store this dynamic data in indexedDB.  Make a clone, Transform and store it
-            var clonedRes = res.clone();
             return clonedRes.json();
           })
           .then(function (data) {
