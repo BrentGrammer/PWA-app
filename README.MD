@@ -8,7 +8,21 @@ Built following Maximilian Schwarzmüller's "Progressive Web Apps - Complete Gui
 
 - **Also, [see the `NOTES`](https://github.com/BrentGrammer/PWA-app/tree/master/NOTES) folder for a summary of various PWA concepts and strategies.**
 
-# How to Use
+## Topics Covered
+
+- [Service Worker Overview](https://github.com/BrentGrammer/PWA-app/blob/master/NOTES/Service%20Workers.md)
+- [App Manifest](https://github.com/BrentGrammer/PWA-app/blob/master/NOTES/AppManifest.md)
+- [Development Setup](https://github.com/BrentGrammer/PWA-app/blob/master/NOTES/Dev-setup.md)
+- [Background Sync](https://github.com/BrentGrammer/PWA-app/blob/master/NOTES/Background-Sync.md)
+- [Caching](https://github.com/BrentGrammer/PWA-app/blob/master/NOTES/Caching.md)
+- [Using the Device Camera](https://github.com/BrentGrammer/PWA-app/blob/master/NOTES/Camera.md)
+- [Using the Device's Location](https://github.com/BrentGrammer/PWA-app/blob/master/NOTES/GeoLocation.md)
+- [Using IndexedDB For Dynamic Caching of Structured Data](https://github.com/BrentGrammer/PWA-app/blob/master/NOTES/IndexedDB.md)
+- [Push Notifications](https://github.com/BrentGrammer/PWA-app/blob/master/NOTES/PushNotifications.md)
+- [Using Workbox](https://github.com/BrentGrammer/PWA-app/blob/master/NOTES/Workbox.md)
+- [Adding custom service worker code to a React App](https://github.com/BrentGrammer/PWA-app/blob/master/NOTES/SPA-ServiceWorker.md)
+
+## How to Use
 
 ### Pre-requisites
 
