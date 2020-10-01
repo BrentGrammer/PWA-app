@@ -19,7 +19,7 @@ workbox.setConfig({
 
 // Use the imported Workbox libraries to dynamically cache route responses:
 const { registerRoute } = workbox.routing;
-const { NetworkFirst, StaleWhileRevalidate } = workbox.strategies;
+const { StaleWhileRevalidate } = workbox.strategies;
 // cache strategies to use:
 const { ExpirationPlugin } = workbox.expiration;
 
