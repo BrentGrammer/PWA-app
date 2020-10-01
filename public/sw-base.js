@@ -86,4 +86,42 @@ registerRoute(
   }
 );
 
+// Pass a function as the first argument to target specific routes based on their headers, etc.
+// This is to cache the offline fallback page we created - need to do this because we want to return a specific html page respnse if certain conditions are met
+workbox.routing.registerRoute(
+  function (routeData) {
+    // you have access to the request route in here through routeData - you can check the headers for all requests asking for html pages
+    return routeData.event.request.headers.get("accept").includes("text/html");
+  },
+  function (args) {
+    // in your custom handler, return the requested html page requested if possible, or the fallback offline.html page if not possible
+    return caches.match(args.event.request).then(function (responseInCache) {
+      if (responseInCache) {
+        // return the res for the request in the cache if it is already stored
+        return responseInCache;
+      } else {
+        // fallback to network req if html page not found in the cache
+        return fetch(args.event.request)
+          .then(function (res) {
+            // store the response in cache if successful network response
+            return caches.open("dynamic").then(function (cache) {
+              cache.put(args.event.request.url, res.clone());
+              return res;
+            });
+          })
+          .catch(function (err) {
+            // if you error on the request, then fallback to getting our custom offline page from the cache
+            // using workbox.precaching.getCacheKeyForURL() instead of just 'offline.html - needed for WB v5
+            return caches
+              .match(workbox.precaching.getCacheKeyForURL("/offline.html"))
+              .then(function (res) {
+                return res;
+              });
+            // Our offline.html page is cached in the workbox-config.js since we cache all html request responses in the globPatterns property
+          });
+      }
+    });
+  }
+);
+
 workbox.precaching.precacheAndRoute(self.__WB_MANIFEST);

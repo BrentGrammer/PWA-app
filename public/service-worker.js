@@ -86,4 +86,42 @@ registerRoute(
   }
 );
 
+// Pass a function as the first argument to target specific routes based on their headers, etc.
+// This is to cache the offline fallback page we created
+workbox.routing.registerRoute(
+  function (routeData) {
+    // you have access to the request route in here through routeData - you can check the headers for all requests asking for html pages
+    return routeData.event.request.headers.get("accept").includes("text/html");
+  },
+  function (args) {
+    // in your custom handler, return the requested html page requested if possible, or the fallback offline.html page if not possible
+    return caches.match(args.event.request).then(function (responseInCache) {
+      if (responseInCache) {
+        // return the res for the request in the cache if it is already stored
+        return responseInCache;
+      } else {
+        // fallback to network req if html page not found in the cache
+        return fetch(args.event.request)
+          .then(function (res) {
+            // store in cache if successful network response
+            return caches.open("dynamic").then(function (cache) {
+              cache.put(args.event.request.url, res.clone());
+              return res;
+            });
+          })
+          .catch(function (err) {
+            // if you error on the request, then fallback to getting our custom offline page from the cache
+            // using workbox.precaching.getCacheKeyForURL() instead of just 'offline.html - needed for WB v5
+            return caches
+              .match(workbox.precaching.getCacheKeyForURL("/offline.html"))
+              .then(function (res) {
+                return res;
+              });
+            // Our offline.html page is cached in the workbox-config.js since we cache all html request responses in the globPatterns property
+          });
+      }
+    });
+  }
+);
+
 workbox.precaching.precacheAndRoute([{"revision":"0a27a4163254fc8fce870c8cc3a3f94f","url":"404.html"},{"revision":"2cab47d9e04d664d93c8d91aec59e812","url":"favicon.ico"},{"revision":"3fe94e640f337a6b3d854ba93513da44","url":"index.html"},{"revision":"0b2b1e99fb157c1dfea95a2d5954d723","url":"manifest.json"},{"revision":"cd12c110221438375eacd91f061ab509","url":"offline.html"},{"revision":"59d917c544c1928dd9a9e1099b0abd71","url":"src/css/app.css"},{"revision":"cbabf4fff1915f8a2b9b8635c5aeb680","url":"src/css/feed.css"},{"revision":"1c6d81b27c9d423bece9869b07a7bd73","url":"src/css/help.css"},{"revision":"a2133968e5742d0f49982f43b02718dc","url":"src/js/app.js"},{"revision":"77973ff360562b116ebae060e6d427e9","url":"src/js/feed.js"},{"revision":"6b82fbb55ae19be4935964ae8c338e92","url":"src/js/fetch.js"},{"revision":"017ced36d82bea1e08b08393361e354d","url":"src/js/idb.js"},{"revision":"713af0c6ce93dbbce2f00bf0a98d0541","url":"src/js/material.min.js"},{"revision":"10c2238dcd105eb23f703ee53067417f","url":"src/js/promise.js"},{"revision":"3873e7427f7282225cb4c7c73254e802","url":"src/js/utility.js"},{"revision":"f18eee95d73709d87fca5f0597f7e3ed","url":"sw.old.js"},{"revision":"104536ce72429ec1f598883183de70b7","url":"workbox-69b5a3b7.js"},{"revision":"31b19bffae4ea13ca0f2178ddb639403","url":"src/images/main-image-lg.jpg"},{"revision":"c6bb733c2f39c60e3c139f814d2d14bb","url":"src/images/main-image-sm.jpg"},{"revision":"5c66d091b0dc200e8e89e56c589821fb","url":"src/images/main-image.jpg"},{"revision":"0f282d64b0fb306daf12050e812d6a19","url":"src/images/sf-boat.jpg"}]);

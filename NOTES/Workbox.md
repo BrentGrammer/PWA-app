@@ -59,7 +59,7 @@ module.exports = {
   - generates a new service worker and overwrites the old one
 - **If you are using injectManifest**: Run the injectManifest script every time you make changes to your base sw file, not the generateSW script above:
   - `workbox injectManifest workbox-config.js`
-- After this, clear storage in dev tools and reload/reopen tab for app in browser
+- After this, `Application -> clear storage -> Clear site data` in dev tools and reload the tab twice
 
 ## Routing / Dynamic Caching with Workbox
 
