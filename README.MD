@@ -120,4 +120,4 @@ Now generate the keys with `npm run web-push generate-vapid-keys`
   ### Dev workflow:
 
   - `npm run injectManifest` whenever you make changes to `sw-base.js`
-  - `Clear storage` in dev tools, and reload tab, then close/re-open app in new tab
+  - `Application -> Clear Storage -> Clear site data` in dev tools, and reload tab, then reload the app/tab twice
