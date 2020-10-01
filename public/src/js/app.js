@@ -16,7 +16,7 @@ if (window.Promise) {
 if ("serviceWorker" in navigator) {
   // tell the browser where the worker js file is and it will set it up as a background process.  Register returns a promise
   navigator.serviceWorker
-    .register("/sw.js")
+    .register("/service-worker.js")
     .then(() => {
       console.log("service worker registered.");
     })
