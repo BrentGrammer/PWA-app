@@ -292,7 +292,6 @@ if ("indexedDB" in window) {
   readAllData("posts").then(function (data) {
     // don't overwrite network fetch if it's complete
     if (!networkReqComplete) {
-      console.log("data from indexedDB", data);
       updateUI(data);
     }
   });
@@ -303,7 +302,7 @@ if ("indexedDB" in window) {
 function sendData() {
   var id = new Date().toISOString();
   // since we are sending a file for the image now, we send FormData instead of just JSON
-  var formData = new FormData();
+  var postData = new FormData();
   postData.append("id", id);
   postData.append("title", titleInput.value);
   postData.append("location", locationInput.value);
@@ -315,7 +314,7 @@ function sendData() {
     "https://us-central1-pwa-practice-app-289604.cloudfunctions.net/storePostData",
     {
       method: "POST",
-      body: formData,
+      body: postData,
     }
   ).then(function (res) {
     updateUI();
@@ -344,6 +343,7 @@ form.addEventListener("submit", function (event) {
       //store the data to send in a separate table in indexedDB
       writeData("sync-posts", post)
         .then(function () {
+          console.log("should be registering task");
           // register the task and pass in an id tag for it
           // this tag will be referenced when the sync event is emitted in the sw
           return sw.sync.register("sync-new-posts");

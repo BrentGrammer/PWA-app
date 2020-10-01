@@ -267,6 +267,7 @@ function syncData(postData) {
     .then(function (res) {
       // clean up and remove the post data for the task stored in indexedDB
       if (res.ok) {
+        // see new file - this needs to parse the res and use that id - tehre is no dt here
         deleteItemFromData("sync-posts", dt.id);
       }
     })
