@@ -87,7 +87,7 @@ registerRoute(
 );
 
 // Pass a function as the first argument to target specific routes based on their headers, etc.
-// This is to cache the offline fallback page we created
+// This is to cache the offline fallback page we created - need to do this because we want to return a specific html page respnse if certain conditions are met
 workbox.routing.registerRoute(
   function (routeData) {
     // you have access to the request route in here through routeData - you can check the headers for all requests asking for html pages
@@ -103,7 +103,7 @@ workbox.routing.registerRoute(
         // fallback to network req if html page not found in the cache
         return fetch(args.event.request)
           .then(function (res) {
-            // store in cache if successful network response
+            // store the response in cache if successful network response
             return caches.open("dynamic").then(function (cache) {
               cache.put(args.event.request.url, res.clone());
               return res;
@@ -124,4 +124,144 @@ workbox.routing.registerRoute(
   }
 );
 
-workbox.precaching.precacheAndRoute([{"revision":"0a27a4163254fc8fce870c8cc3a3f94f","url":"404.html"},{"revision":"2cab47d9e04d664d93c8d91aec59e812","url":"favicon.ico"},{"revision":"3fe94e640f337a6b3d854ba93513da44","url":"index.html"},{"revision":"0b2b1e99fb157c1dfea95a2d5954d723","url":"manifest.json"},{"revision":"cd12c110221438375eacd91f061ab509","url":"offline.html"},{"revision":"59d917c544c1928dd9a9e1099b0abd71","url":"src/css/app.css"},{"revision":"cbabf4fff1915f8a2b9b8635c5aeb680","url":"src/css/feed.css"},{"revision":"1c6d81b27c9d423bece9869b07a7bd73","url":"src/css/help.css"},{"revision":"a2133968e5742d0f49982f43b02718dc","url":"src/js/app.js"},{"revision":"77973ff360562b116ebae060e6d427e9","url":"src/js/feed.js"},{"revision":"6b82fbb55ae19be4935964ae8c338e92","url":"src/js/fetch.js"},{"revision":"017ced36d82bea1e08b08393361e354d","url":"src/js/idb.js"},{"revision":"713af0c6ce93dbbce2f00bf0a98d0541","url":"src/js/material.min.js"},{"revision":"10c2238dcd105eb23f703ee53067417f","url":"src/js/promise.js"},{"revision":"3873e7427f7282225cb4c7c73254e802","url":"src/js/utility.js"},{"revision":"f18eee95d73709d87fca5f0597f7e3ed","url":"sw.old.js"},{"revision":"104536ce72429ec1f598883183de70b7","url":"workbox-69b5a3b7.js"},{"revision":"31b19bffae4ea13ca0f2178ddb639403","url":"src/images/main-image-lg.jpg"},{"revision":"c6bb733c2f39c60e3c139f814d2d14bb","url":"src/images/main-image-sm.jpg"},{"revision":"5c66d091b0dc200e8e89e56c589821fb","url":"src/images/main-image.jpg"},{"revision":"0f282d64b0fb306daf12050e812d6a19","url":"src/images/sf-boat.jpg"}]);
+workbox.precaching.precacheAndRoute([{"revision":"0a27a4163254fc8fce870c8cc3a3f94f","url":"404.html"},{"revision":"2cab47d9e04d664d93c8d91aec59e812","url":"favicon.ico"},{"revision":"3fe94e640f337a6b3d854ba93513da44","url":"index.html"},{"revision":"0b2b1e99fb157c1dfea95a2d5954d723","url":"manifest.json"},{"revision":"cd12c110221438375eacd91f061ab509","url":"offline.html"},{"revision":"59d917c544c1928dd9a9e1099b0abd71","url":"src/css/app.css"},{"revision":"cbabf4fff1915f8a2b9b8635c5aeb680","url":"src/css/feed.css"},{"revision":"1c6d81b27c9d423bece9869b07a7bd73","url":"src/css/help.css"},{"revision":"a2133968e5742d0f49982f43b02718dc","url":"src/js/app.js"},{"revision":"f096ae5f250c91d6d79b37b44d0da520","url":"src/js/feed.js"},{"revision":"6b82fbb55ae19be4935964ae8c338e92","url":"src/js/fetch.js"},{"revision":"017ced36d82bea1e08b08393361e354d","url":"src/js/idb.js"},{"revision":"713af0c6ce93dbbce2f00bf0a98d0541","url":"src/js/material.min.js"},{"revision":"10c2238dcd105eb23f703ee53067417f","url":"src/js/promise.js"},{"revision":"3873e7427f7282225cb4c7c73254e802","url":"src/js/utility.js"},{"revision":"999eeca0a9a729e72ffbf848178ff7e7","url":"sw.old.js"},{"revision":"104536ce72429ec1f598883183de70b7","url":"workbox-69b5a3b7.js"},{"revision":"31b19bffae4ea13ca0f2178ddb639403","url":"src/images/main-image-lg.jpg"},{"revision":"c6bb733c2f39c60e3c139f814d2d14bb","url":"src/images/main-image-sm.jpg"},{"revision":"5c66d091b0dc200e8e89e56c589821fb","url":"src/images/main-image.jpg"},{"revision":"0f282d64b0fb306daf12050e812d6a19","url":"src/images/sf-boat.jpg"}]);
+
+/**
+ * Push notification and background sync implementation
+ *   - Workbox does not currently provide an implementation for this, so you need to write your own
+ *   - You can add any valid sw code in this file just fine - this is added after the precaching line above
+ */
+
+// Sync Data from background sync tasks
+// 'sync' event is emitted when connectivity is re-established
+// 'sync also fires if connected, but a new sync task is registered
+self.addEventListener("sync", function (event) {
+  console.log(
+    "[Service Worker] Background Syncing - sync event emitted",
+    event
+  );
+  // the event has a tag on it which matches the one you set in the task registration (feed.js)
+  if (event.tag === "sync-new-posts") {
+    console.log("[Sevice Worker] Syncing new posts.");
+    // wait for event sending the data is finished
+    event.waitUntil(
+      // uses idb to read data from indexedDB - custom helper we created returns a promise
+      readAllData("sync-posts").then(function (data) {
+        // loop through data in indexedDB if user sent more than one post to sync
+        for (var dt of data) {
+          // we send formData now, not application/json, which includes our image BLOB taken for the post:
+          var postData = new FormData();
+          postData.append("id", dt.id);
+          postData.append("title", dt.title);
+          postData.append("location", dt.location);
+          postData.append("rawLocationLat", dt.rawLocation.lat); // rawLocation is what we're storing in indexedDB in feed.js from getting the position
+          postData.append("rawLocationLng", dt.rawLocation.lng);
+          postData.append("file", dt.picture, dt.id + ".png"); // you can overwrite the name of a file with the third argument.  You may also want to get the mime type to append instead of hardcoding png
+
+          syncData(postData);
+        }
+      })
+    );
+  }
+});
+
+function syncData(postData) {
+  // fetch url is to a google cloud function
+  const url =
+    "https://us-central1-pwa-practice-app-289604.cloudfunctions.net/storePostData ";
+  return fetch(url, {
+    method: "POST",
+    // We don't need headers now and want to be able to accept form data for storing the image taken for a post from the camera
+    // if we don't have any headers, then the type of data will automatically be inferred, so we remove the headers parameter sent with the request
+    // headers: {
+    //   "Content-Type": "application/json",
+    //   Accept: "application/json",
+    // },
+    body: postData,
+  })
+    .then(async (res) => {
+      // clean up and remove the post data for the task stored in indexedDB
+      if (res.ok) {
+        const parsed = await res.json();
+        console.log({ parsed });
+
+        deleteItemFromData("sync-posts", parsed.id); // return this?
+      } else {
+        throw new Error("Bad Response"); // suggested in QA for syncing issues?
+      }
+    })
+    .catch((e) => {
+      console.error(e);
+    });
+}
+
+// Handle notification action clicks by the user
+self.addEventListener("notificationclick", function (event) {
+  // find out which notification it was for
+  var notification = event.notification;
+  // find which action was clicked
+  var action = event.action; // this matches up to the id set up in the `action` prop in app.js
+
+  if (action === "confirm") {
+    console.log("confirm was chosen");
+    // close the notification - it does not close automatically on some OSs (android)
+    notification.close();
+  } else {
+    // this is how to open a new page is opened from a notification
+    // go to a page the user has open for the app if there is one, or open a window and go to a page
+    // use waituntil to tell the service worker not to continue until the page has been opened and this code has run
+    event.waitUntil(
+      // clients refers to all windows or browser tasks related to this service worker
+      clients.matchAll().then(function (clis) {
+        // find windows managed by service worker that are visible (open windows where our app is running)
+        var client = clis.find(function (c) {
+          // find the first app window that is visible
+          return c.visibilityState === "visible";
+        });
+
+        console.log({ client }, clis.length);
+
+        if (client !== undefined) {
+          // if window is open, then go to a page url passed in:
+          client.navigate(notification.data.openUrl); // comes from the data payload passed with the push notification on your server
+          client.focus();
+        } else {
+          // if no open window then open one with the clients API
+          clients.openWindow(notification.data.openUrl);
+        }
+        notification.close();
+      })
+    );
+  }
+});
+
+self.addEventListener("notificationclose", function (event) {
+  console.log("notification closed.");
+});
+
+// listen to Push Notifications
+self.addEventListener("push", function (event) {
+  console.log("push notif reveiberd", event);
+
+  // set a fallback data payload if no payload is found on the push notif
+  var data = { title: "Fallback", content: "Fallback content", openUrl: "/" };
+
+  // check for the payload sent with the push notif
+  if (event.data) {
+    data = JSON.parse(event.data.text()); // need text() to extract the json to a string
+  }
+
+  var options = {
+    body: data.content,
+    icon: "/src/images/icons/app-icon-96x96.png",
+    badge: "/src/images/icons/app-icon-96x96.png",
+    data: { openUrl: data.openUrl }, // data is used to pass metadata you can use - in this case it is used in the notificationclick listener.  The openUrl is set on the backend in index.js
+  };
+
+  // use waituntil to make sure service worker waits until you show the notification
+  event.waitUntil(
+    // the sw itself cannot show a notification, you need access to the service worker Registration
+    // NOTE: the sw registration is the part that connects the service worker to the browser
+    self.registration.showNotification(data.title, options) //takes title and standard notification options
+  );
+});

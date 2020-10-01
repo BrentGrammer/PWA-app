@@ -125,3 +125,143 @@ workbox.routing.registerRoute(
 );
 
 workbox.precaching.precacheAndRoute(self.__WB_MANIFEST);
+
+/**
+ * Push notification and background sync implementation
+ *   - Workbox does not currently provide an implementation for this, so you need to write your own
+ *   - You can add any valid sw code in this file just fine - this is added after the precaching line above
+ */
+
+// Sync Data from background sync tasks
+// 'sync' event is emitted when connectivity is re-established
+// 'sync also fires if connected, but a new sync task is registered
+self.addEventListener("sync", function (event) {
+  console.log(
+    "[Service Worker] Background Syncing - sync event emitted",
+    event
+  );
+  // the event has a tag on it which matches the one you set in the task registration (feed.js)
+  if (event.tag === "sync-new-posts") {
+    console.log("[Sevice Worker] Syncing new posts.");
+    // wait for event sending the data is finished
+    event.waitUntil(
+      // uses idb to read data from indexedDB - custom helper we created returns a promise
+      readAllData("sync-posts").then(function (data) {
+        // loop through data in indexedDB if user sent more than one post to sync
+        for (var dt of data) {
+          // we send formData now, not application/json, which includes our image BLOB taken for the post:
+          var postData = new FormData();
+          postData.append("id", dt.id);
+          postData.append("title", dt.title);
+          postData.append("location", dt.location);
+          postData.append("rawLocationLat", dt.rawLocation.lat); // rawLocation is what we're storing in indexedDB in feed.js from getting the position
+          postData.append("rawLocationLng", dt.rawLocation.lng);
+          postData.append("file", dt.picture, dt.id + ".png"); // you can overwrite the name of a file with the third argument.  You may also want to get the mime type to append instead of hardcoding png
+
+          syncData(postData);
+        }
+      })
+    );
+  }
+});
+
+function syncData(postData) {
+  // fetch url is to a google cloud function
+  const url =
+    "https://us-central1-pwa-practice-app-289604.cloudfunctions.net/storePostData ";
+  return fetch(url, {
+    method: "POST",
+    // We don't need headers now and want to be able to accept form data for storing the image taken for a post from the camera
+    // if we don't have any headers, then the type of data will automatically be inferred, so we remove the headers parameter sent with the request
+    // headers: {
+    //   "Content-Type": "application/json",
+    //   Accept: "application/json",
+    // },
+    body: postData,
+  })
+    .then(async (res) => {
+      // clean up and remove the post data for the task stored in indexedDB
+      if (res.ok) {
+        const parsed = await res.json();
+        console.log({ parsed });
+
+        deleteItemFromData("sync-posts", parsed.id); // return this?
+      } else {
+        throw new Error("Bad Response"); // suggested in QA for syncing issues?
+      }
+    })
+    .catch((e) => {
+      console.error(e);
+    });
+}
+
+// Handle notification action clicks by the user
+self.addEventListener("notificationclick", function (event) {
+  // find out which notification it was for
+  var notification = event.notification;
+  // find which action was clicked
+  var action = event.action; // this matches up to the id set up in the `action` prop in app.js
+
+  if (action === "confirm") {
+    console.log("confirm was chosen");
+    // close the notification - it does not close automatically on some OSs (android)
+    notification.close();
+  } else {
+    // this is how to open a new page is opened from a notification
+    // go to a page the user has open for the app if there is one, or open a window and go to a page
+    // use waituntil to tell the service worker not to continue until the page has been opened and this code has run
+    event.waitUntil(
+      // clients refers to all windows or browser tasks related to this service worker
+      clients.matchAll().then(function (clis) {
+        // find windows managed by service worker that are visible (open windows where our app is running)
+        var client = clis.find(function (c) {
+          // find the first app window that is visible
+          return c.visibilityState === "visible";
+        });
+
+        console.log({ client }, clis.length);
+
+        if (client !== undefined) {
+          // if window is open, then go to a page url passed in:
+          client.navigate(notification.data.openUrl); // comes from the data payload passed with the push notification on your server
+          client.focus();
+        } else {
+          // if no open window then open one with the clients API
+          clients.openWindow(notification.data.openUrl);
+        }
+        notification.close();
+      })
+    );
+  }
+});
+
+self.addEventListener("notificationclose", function (event) {
+  console.log("notification closed.");
+});
+
+// listen to Push Notifications
+self.addEventListener("push", function (event) {
+  console.log("push notif reveiberd", event);
+
+  // set a fallback data payload if no payload is found on the push notif
+  var data = { title: "Fallback", content: "Fallback content", openUrl: "/" };
+
+  // check for the payload sent with the push notif
+  if (event.data) {
+    data = JSON.parse(event.data.text()); // need text() to extract the json to a string
+  }
+
+  var options = {
+    body: data.content,
+    icon: "/src/images/icons/app-icon-96x96.png",
+    badge: "/src/images/icons/app-icon-96x96.png",
+    data: { openUrl: data.openUrl }, // data is used to pass metadata you can use - in this case it is used in the notificationclick listener.  The openUrl is set on the backend in index.js
+  };
+
+  // use waituntil to make sure service worker waits until you show the notification
+  event.waitUntil(
+    // the sw itself cannot show a notification, you need access to the service worker Registration
+    // NOTE: the sw registration is the part that connects the service worker to the browser
+    self.registration.showNotification(data.title, options) //takes title and standard notification options
+  );
+});

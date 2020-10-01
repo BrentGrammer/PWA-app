@@ -4,6 +4,9 @@
 - Store requests user sends while offline and send them when connectivity is regained later.
 - `SyncManager` is the api that is exposed to register background sync tasks
   - [ See MDN Entry with Browser Support](https://developer.mozilla.org/en-US/docs/Web/API/SyncManager)
+- The `sync` event fires when you:
+  - Register a sync task (usually done when sending a request)
+  - Re-establish Connection - (this can vary by browser - some may wait 5 or 15 minutes to fire the event)
 
 ### Process:
 

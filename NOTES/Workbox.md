@@ -2,6 +2,7 @@
 
 - Tool by Google for automatic service worker management
 - Can use it with Gulp/Webpack various project setups or just the cli with straight scripts
+- Note that you can still add custom service worker code to your Workbox implementation (using injectManifest script and a base service worker file)
 - [DOCS](https://developers.google.com/web/tools/workbox/modules/workbox-cli)
 
 ## Setup
@@ -151,6 +152,8 @@ workbox.precaching.precacheAndRoute(self.__WB_MANIFEST);
     - [Broadcast Cache Update plugin: not used often](https://developers.google.com/web/tools/workbox/reference-docs/latest/module-workbox-broadcast-update)
     - [Cacheable Response:](https://developers.google.com/web/tools/workbox/reference-docs/latest/module-workbox-cacheable-response) Can cache responses based on status codes, headers etc.
     - [Background Sync Plugin](https://developers.google.com/web/tools/workbox/reference-docs/latest/module-workbox-background-sync)
+      - [See Example Usage here](https://developers.google.com/web/tools/workbox/modules/workbox-background-sync)
+      - Note that you can install plugin libraries from Workbox via npm: (https://www.npmjs.com/package/workbox-background-sync)
     - [Range Requests Plugin](https://developers.google.com/web/tools/workbox/reference-docs/latest/module-workbox-range-requests)
 
     Ex:
@@ -249,6 +252,19 @@ workbox.routing.registerRoute(
   }
 );
 ```
+
+### Push Notifications with Workbox
+
+- There is currently no fitting strategy or helper for handling push notifications
+- Add your custom push notification code (code regarding background synchronization and push messages) to the base service worker file you use to build upon with injectManifest (`sw-base.js`)
+  - Can add this code after the `precaching.preCacheAndRoute()` line
+
+### Background Sync with Workbox
+
+- You need to write your own implementation for this and add it into the base sw file
+- [See this post on when sync occurs](https://stackoverflow.com/questions/53786395/service-workers-when-does-the-browser-sync-back-again):
+  - 5 minutes after and 15 minutes after a connection is established?
+- Manually fire a sync event in the browser: got to dev tools -> Application -> Service Workers and enter your sync tag into the Sync field and press `Sync`
 
 ## Further Resources
 
