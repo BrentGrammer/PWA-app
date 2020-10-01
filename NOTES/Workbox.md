@@ -59,6 +59,7 @@ module.exports = {
   - generates a new service worker and overwrites the old one
 - **If you are using injectManifest**: Run the injectManifest script every time you make changes to your base sw file, not the generateSW script above:
   - `workbox injectManifest workbox-config.js`
+- After this, clear storage in dev tools and reload/reopen tab for app in browser
 
 ## Routing / Dynamic Caching with Workbox
 
@@ -80,6 +81,7 @@ module.exports = {
   - `swSrc: "public/sw-base.js",`
   - run the injectManifest script to generate a new service-worker.js
 
+- Your `sw-base.js` file is what you edit and do work in. Workbox will use it to build on and generate a new `service-worker.js`
 - In your `sw-base.js` file you can use the CDN workbox library to dynamically cache routes for things such as google fonts, CDN requests, etc.
   - using a `staleWhileRevalidate` strategy will check the cache for the asset and also fetch the resource and use or update the cache with it. (cache then network strategy)
 
@@ -141,13 +143,40 @@ workbox.precaching.precacheAndRoute(self.__WB_MANIFEST);
   - `StaleWhileRevalidate`: Cache, then Network (always check the network, not just fallback)
 
 - You can pass in configuration to these strategies
+
   - `cacheName`
   - Plugins: see docs and file example:
+
     - [`ExpirationPlugin`: { `maxEntries`, `maxAgeSeconds` }](https://developers.google.com/web/tools/workbox/reference-docs/latest/module-workbox-expiration): Limit the number of assets stored in that cache and fetch updated versions if the max age has expired
     - [Broadcast Cache Update plugin: not used often](https://developers.google.com/web/tools/workbox/reference-docs/latest/module-workbox-broadcast-update)
     - [Cacheable Response:](https://developers.google.com/web/tools/workbox/reference-docs/latest/module-workbox-cacheable-response) Can cache responses based on status codes, headers etc.
     - [Background Sync Plugin](https://developers.google.com/web/tools/workbox/reference-docs/latest/module-workbox-background-sync)
     - [Range Requests Plugin](https://developers.google.com/web/tools/workbox/reference-docs/latest/module-workbox-range-requests)
+
+    Ex:
+
+    ```javascript
+    registerRoute(
+      /.*(?:googleapis|gstatic)\.com.*$/,
+      new StaleWhileRevalidate({
+        cacheName: "google-fonts",
+        plugins: [
+          // this sets a timestamp entry in indexedDB for the assets which it manages and checks to automatically remove when expiration comes
+          new ExpirationPlugin({
+            maxEntries: 3, // we only have 3 fonts we're using, don't store more
+            maxAgeSeconds: 60 * 60 * 24 * 30, // not necessarily with staleWhileRevalidate, but done here for example
+          }),
+        ],
+      })
+    );
+    ```
+
+### Custom Strategies
+
+- Make a custom handler for a route with a custom caching strategy you define outside of what Workbox provides. You still take advantage of Workbox routing management.
+  - There may not be an indexedDB strategy for example.
+- Pass a function to the second argument of `registerRoute` which takes `args` that is the request event (the `fetch` event) - this contains info about the request sent
+  - Return a promise that yields a response
 
 ## Further Resources
 
