@@ -5,8 +5,9 @@
   "main": "index.js",
   "scripts": {
     "start": "http-server -c-1",
-    "generate-sw": "workbox wizard && workbox generateSW workbox-config.js",
-    "update-sw": "workbox generateSW workbox-config.js"
+    "injectManifest": "workbox injectManifest workbox-config.js",
+    "generate-sw": "workbox generateSW workbox-config.js",
+    "wb-init": "workbox wizard && workbox generateSW workbox-config.js"
   },
   "keywords": [
     "pwa",

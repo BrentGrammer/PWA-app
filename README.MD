@@ -113,14 +113,7 @@ Now generate the keys with `npm run web-push generate-vapid-keys`
 
   - [see post for updated setup](https://www.udemy.com/course/progressive-web-app-pwa-the-complete-guide/learn/lecture/7867598#questions/12596996)
 
-  ## Workbox Setup
+  ## Workbox
 
-  - Install as a dev dependency: `npm install --save-dev workbox-cli` for v2
-    - v3 is the latest as of this date
-  - write an npm script in `package.json` to use it to generate a service worker:
-    - `"generate-sw": "workbox wizard && workbox generateSW workbox-config.js"`
-      - \*\*\* Note: File name must be matched. If you had changedworkbox-config.js" to something else, please replace with your file name.
-    - run the script `npm run generate-sw`
-      - choose the root of the web app when prompted (where index.html is served)
-      - Follow prompts (can store everything to start with)
-      - Troubleshooting: if you get a require error on generating the config file, do not enter `Y` to the later prompts, just press `enter` to save config when prompted.
+  - The app uses Dynamic caching/routing via Workbox
+  - `npm run injectManifest` whenever you make changes to `sw-base.js`
