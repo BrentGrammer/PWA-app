@@ -77,6 +77,7 @@ self.addEventListener("sync", function (event) {
 ### Troubelshooting
 
 - In dev, you may need to completely disconnect your internet and reconnect to get background sync working (not just checking offline in dev tools)
+- If you don't see a sync event when reconnecting in Chrome, you may need to wait 5 or 15 minutes, or just send another request which will trigger the sync event.
 
 ## Periodic Sync
 

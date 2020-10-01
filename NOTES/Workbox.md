@@ -56,9 +56,9 @@ module.exports = {
 
 ## Development
 
-- When you make changes to the service-worker or config file, run the script that runs `workbox generateSW workbox-config.js` (make an npm script for it)
+- When you make changes to the service-worker or config file, run the script that runs `workbox generateSW workbox-config.js` (make an npm script for it) if you are not using injectManifest
   - generates a new service worker and overwrites the old one
-- **If you are using injectManifest**: Run the injectManifest script every time you make changes to your base sw file, not the generateSW script above:
+- **If you are using injectManifest**: Run the injectManifest script every time you make changes to your base sw file or any of your other files, not the generateSW script above:
   - `workbox injectManifest workbox-config.js`
 - After this, `Application -> clear storage -> Clear site data` in dev tools and reload the tab twice
 
@@ -257,7 +257,7 @@ workbox.routing.registerRoute(
 
 - There is currently no fitting strategy or helper for handling push notifications
 - Add your custom push notification code (code regarding background synchronization and push messages) to the base service worker file you use to build upon with injectManifest (`sw-base.js`)
-  - Can add this code after the `precaching.preCacheAndRoute()` line
+  - Can add this code after the `precaching.preCacheAndRoute()` line (see `sw-base.js`)
 
 ### Background Sync with Workbox
 
@@ -265,6 +265,8 @@ workbox.routing.registerRoute(
 - [See this post on when sync occurs](https://stackoverflow.com/questions/53786395/service-workers-when-does-the-browser-sync-back-again):
   - 5 minutes after and 15 minutes after a connection is established?
 - Manually fire a sync event in the browser: got to dev tools -> Application -> Service Workers and enter your sync tag into the Sync field and press `Sync`
+- If you don't see a sync event when reconnecting in Chrome, you may need to wait 5 or 15 minutes, or just send another request which will trigger the sync event.
+- You can use the background-sync plugin from Workbox if you want as well as make your custom implementation (see `sw-base.js`)
 
 ## Further Resources
 
