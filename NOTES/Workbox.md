@@ -7,8 +7,7 @@
 
 ## Setup
 
-- Install as a dev dependency: `npm install --save-dev workbox-cli` for v2
-  - v3 is the latest as of this date
+- Install as a dev dependency: `npm install --save-dev workbox-cli`
 - write an npm script in `package.json` to use it to generate a service worker:
   - `"generate-sw": "workbox wizard && workbox generateSW workbox-config.js"`
     - This will analyze your files and automatically generate a config file to cache them (you can change this config file to tweak caching later)
