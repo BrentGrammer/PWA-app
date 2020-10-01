@@ -62,6 +62,11 @@ module.exports = {
   - `workbox injectManifest workbox-config.js`
 - After this, `Application -> clear storage -> Clear site data` in dev tools and reload the tab twice
 
+## Deploying to Prod
+
+- If deploying to firebase or other hosts, they may take your assets in src such as your offline page html file and store them somewhere else. Your pre-caching service worker will then not find it and throw an error.
+  - Add it to the `globIgnores` in your workbox-config.js file so you do not precache it. It will simply be loaded dynamically
+
 ## Routing / Dynamic Caching with Workbox
 
 ### injectManifest

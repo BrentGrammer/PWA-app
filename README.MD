@@ -110,6 +110,7 @@ Now generate the keys with `npm run web-push generate-vapid-keys`
 - `@google-cloud/storage`: Allows you to save files to google cloud storage on the backend
 - `uuid-v4` - used to generate a public url to download file uploads from google cloud storage on the server
 - Workbox-cli - manage service workers, tool by google `npm install --save-dev workbox-cli`
+- uglify-es: uglify/minify your es code javascript files before pushing to prod
 
   - [see post for updated setup](https://www.udemy.com/course/progressive-web-app-pwa-the-complete-guide/learn/lecture/7867598#questions/12596996)
 
